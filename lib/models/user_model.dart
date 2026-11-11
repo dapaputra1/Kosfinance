@@ -16,7 +16,21 @@ class User {
       id: json['id'],
       name: json['name'],
       email: json['email'],
-      token: json['token'],
+      token: json['token'] ?? '',
+    );
+  }
+
+  User copyWith({
+    int? id,
+    String? name,
+    String? email,
+    String? token,
+  }) {
+    return User(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      token: token ?? this.token,
     );
   }
 }

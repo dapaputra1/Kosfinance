@@ -112,6 +112,42 @@ app.post("/api/auth/login", async (req, res) => {
   }
 })
 
+app.put("/api/auth/profile", authenticateToken, async (req, res) => {
+  try {
+    const { name, password } = req.body
+    if (!name || name.trim().length === 0) {
+      return res.status(400).json({ message: "Name is required" })
+    }
+
+    if (password && password.length >= 6) {
+      const hashedPassword = await bcrypt.hash(password, 10)
+      await pool.query(
+        "UPDATE users SET name = ?, password = ? WHERE id = ?",
+        [name.trim(), hashedPassword, req.user.id],
+      )
+    } else {
+      await pool.query(
+        "UPDATE users SET name = ? WHERE id = ?",
+        [name.trim(), req.user.id],
+      )
+    }
+
+    const [users] = await pool.query(
+      "SELECT id, name, email FROM users WHERE id = ?",
+      [req.user.id],
+    )
+
+    res.json({
+      id: users[0].id,
+      name: users[0].name,
+      email: users[0].email,
+    })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: "Server error" })
+  }
+})
+
 // Transaction routes
 app.get("/api/transactions", authenticateToken, async (req, res) => {
   try {

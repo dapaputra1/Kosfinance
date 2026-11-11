@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kos_finance_app/models/user_model.dart';
 import 'package:kos_finance_app/models/transaction_model.dart';
 import 'package:kos_finance_app/models/category_model.dart';
@@ -7,8 +8,18 @@ import 'package:kos_finance_app/models/category_model.dart';
 class ApiService {
   static String baseUrl = 'http://10.0.2.2:3000/api'; // For Android emulator
 
-  static void setBaseUrl(String url) {
+  static Future<void> initBaseUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString('custom_base_url');
+    if (saved != null && saved.isNotEmpty) {
+      baseUrl = saved;
+    }
+  }
+
+  static Future<void> setBaseUrl(String url) async {
     baseUrl = url;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('custom_base_url', url);
   }
 
   // Auth endpoints
@@ -37,6 +48,36 @@ class ApiService {
       return User.fromJson(jsonDecode(response.body));
     } else {
       throw Exception(jsonDecode(response.body)['message'] ?? 'Failed to register');
+    }
+  }
+
+  static Future<User> updateProfile({
+    required String name,
+    String? password,
+    required String token,
+  }) async {
+    final Map<String, dynamic> body = {'name': name};
+    if (password != null && password.isNotEmpty) {
+      body['password'] = password;
+    }
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/auth/profile'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return User.fromJson({
+        ...data,
+        'token': token,
+      });
+    } else {
+      throw Exception(jsonDecode(response.body)['message'] ?? 'Failed to update profile');
     }
   }
 
