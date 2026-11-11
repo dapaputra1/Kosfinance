@@ -186,6 +186,47 @@ class _LoginScreenState extends State<LoginScreen> {
                     isLoading: authProvider.isLoading,
                     onPressed: _login,
                   ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Expanded(child: Divider(color: AppColors.border)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'ATAU',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textMuted.withValues(alpha: 0.8),
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ),
+                      const Expanded(child: Divider(color: AppColors.border)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      final nav = Navigator.of(context);
+                      final success = await authProvider.loginGuest();
+                      if (success && mounted) {
+                        nav.pushReplacement(
+                          MaterialPageRoute(builder: (_) => const HomeScreen()),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.offline_bolt_rounded, size: 20, color: AppColors.primary),
+                    label: const Text(
+                      'Lanjut Mode Offline (Tanpa Server)',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: const BorderSide(color: AppColors.primary, width: 1.5),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

@@ -1,18 +1,21 @@
-import 'dart:convert'; // <-- Tambahkan ini untuk akses json.encode & json.decode
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kos_finance_app/models/user_model.dart';
 import 'package:kos_finance_app/services/api_service.dart';
+import 'package:kos_finance_app/services/local_db_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   User? _user;
   bool _isLoading = false;
   String? _error;
+  bool _isOfflineMode = true;
 
   User? get user => _user;
   bool get isLoading => _isLoading;
   bool get isLoggedIn => _user != null;
   String? get error => _error;
+  bool get isOfflineMode => _isOfflineMode;
 
   AuthProvider() {
     _loadUserFromPrefs();
@@ -49,40 +52,38 @@ class AuthProvider extends ChangeNotifier {
     }));
   }
 
-  String _formatErrorMessage(dynamic e) {
-    final str = e.toString();
-    if (str.contains('SocketException') ||
-        str.contains('Connection failed') ||
-        str.contains('ClientException')) {
-      return 'Tidak dapat terhubung ke server di (${ApiService.baseUrl}).\n'
-          'Jika Anda menggunakan HP fisik, pastikan HP & laptop di Wi-Fi yang sama dan ganti alamat server ke IP laptop Anda.';
-    }
-    if (str.contains('Email already in use')) {
-      return 'Email ini sudah terdaftar. Silakan masuk atau gunakan email lain.';
-    }
-    if (str.contains('Invalid credentials') ||
-        str.contains('401') ||
-        str.toLowerCase().contains('invalid')) {
-      return 'Email atau kata sandi salah. Silakan periksa kembali.';
-    }
-    return str.replaceAll('Exception: ', '');
-  }
-
   Future<bool> login(String email, String password) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
+    // 1. Try online first if not in offline-only mode
+    if (!LocalDbService.isOfflineOnly) {
+      try {
+        final user = await ApiService.login(email, password);
+        _user = user;
+        _isOfflineMode = false;
+        await _saveUserToPrefs(user);
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } catch (e) {
+        // If server connection fails, seamlessly fallback to offline local database
+      }
+    }
+
+    // 2. Offline / Local fallback: ALWAYS succeeds for the user!
     try {
-      final user = await ApiService.login(email, password);
+      final user = await LocalDbService.login(email, password);
       _user = user;
+      _isOfflineMode = true;
       await _saveUserToPrefs(user);
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
       _isLoading = false;
-      _error = _formatErrorMessage(e);
+      _error = 'Gagal masuk: ${e.toString()}';
       notifyListeners();
       return false;
     }
@@ -93,16 +94,54 @@ class AuthProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
+    // 1. Try online first if not forced offline
+    if (!LocalDbService.isOfflineOnly) {
+      try {
+        final user = await ApiService.register(name, email, password);
+        _user = user;
+        _isOfflineMode = false;
+        await _saveUserToPrefs(user);
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } catch (e) {
+        // If server connection fails, seamlessly save locally
+      }
+    }
+
+    // 2. Offline / Local fallback: ALWAYS succeeds!
     try {
-      final user = await ApiService.register(name, email, password);
+      final user = await LocalDbService.register(name, email, password);
       _user = user;
+      _isOfflineMode = true;
       await _saveUserToPrefs(user);
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
       _isLoading = false;
-      _error = _formatErrorMessage(e);
+      _error = 'Gagal pendaftaran: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> loginGuest() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final user = await LocalDbService.loginAsGuest();
+      _user = user;
+      _isOfflineMode = true;
+      await _saveUserToPrefs(user);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
       notifyListeners();
       return false;
     }
@@ -114,11 +153,29 @@ class AuthProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
+    // Try online
+    if (!_isOfflineMode) {
+      try {
+        final updatedUser = await ApiService.updateProfile(
+          name: name,
+          password: password,
+          token: _user!.token,
+        );
+        _user = updatedUser;
+        await _saveUserToPrefs(updatedUser);
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } catch (_) {}
+    }
+
+    // Always update local database
     try {
-      final updatedUser = await ApiService.updateProfile(
-        name: name,
-        password: password,
-        token: _user!.token,
+      final updatedUser = await LocalDbService.updateProfile(
+        _user!.id,
+        name,
+        _user!.email,
+        newPassword: password,
       );
       _user = updatedUser;
       await _saveUserToPrefs(updatedUser);

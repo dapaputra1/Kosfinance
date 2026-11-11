@@ -19,4 +19,13 @@ class Category {
       type: json['type'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'icon': icon,
+      'type': type,
+    };
+  }
 }

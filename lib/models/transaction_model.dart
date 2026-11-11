@@ -42,6 +42,7 @@ class Transaction {
 
   Map<String, dynamic> toJson() {
     return {
+      if (id != null) 'id': id,
       'user_id': userId,
       'title': title,
       'amount': amount,
@@ -49,6 +50,8 @@ class Transaction {
       'type': type == TransactionType.income ? 'income' : 'expense',
       'category_id': categoryId,
       'note': note,
+      'category_name': categoryName,
+      'category_icon': categoryIcon,
     };
   }
 
