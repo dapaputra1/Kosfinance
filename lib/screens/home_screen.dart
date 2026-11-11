@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:kos_finance_app/providers/auth_provider.dart';
 import 'package:kos_finance_app/providers/transaction_provider.dart';
 import 'package:kos_finance_app/providers/budget_provider.dart';
+import 'package:kos_finance_app/providers/savings_provider.dart';
 import 'package:kos_finance_app/screens/add_transaction_screen.dart';
 import 'package:kos_finance_app/screens/bills_screen.dart';
 import 'package:kos_finance_app/screens/profile_screen.dart';
@@ -11,6 +12,7 @@ import 'package:kos_finance_app/widgets/animated_popup.dart';
 import 'package:kos_finance_app/widgets/budget_card.dart';
 import 'package:kos_finance_app/widgets/dashboard_card.dart';
 import 'package:kos_finance_app/widgets/recent_transaction_item.dart';
+import 'package:kos_finance_app/widgets/savings_goals_card.dart';
 import 'package:kos_finance_app/widgets/spending_pie_chart.dart';
 import 'package:kos_finance_app/widgets/split_bill_dialog.dart';
 import 'package:kos_finance_app/theme/app_theme.dart';
@@ -42,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
     final budgetProvider = Provider.of<BudgetProvider>(context, listen: false);
+    final savingsProvider = Provider.of<SavingsProvider>(context, listen: false);
     
     if (authProvider.user != null) {
       await Future.wait([
@@ -49,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
         transactionProvider.fetchCategories(authProvider.user!.token),
         transactionProvider.fetchDashboardData(authProvider.user!.token),
         budgetProvider.loadData(authProvider.user!.id),
+        savingsProvider.loadGoals(authProvider.user!.id),
       ]);
     }
   }
@@ -145,6 +149,10 @@ class DashboardScreen extends StatelessWidget {
     final double monthlyIncome = (transactionProvider.dashboardData['monthlyIncome'] as num?)?.toDouble() ?? 0.0;
     final double monthlyExpense = (transactionProvider.dashboardData['monthlyExpense'] as num?)?.toDouble() ?? 0.0;
     final double thisMonthNet = monthlyIncome - monthlyExpense;
+    final now = DateTime.now();
+    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+    final daysRemaining = (daysInMonth - now.day + 1).clamp(1, 31);
+    final safeDailySpend = (balance / daysRemaining).clamp(0.0, double.infinity);
 
     return SafeArea(
       child: RefreshIndicator(
@@ -152,10 +160,12 @@ class DashboardScreen extends StatelessWidget {
         onRefresh: () async {
           if (authProvider.user != null) {
             final budgetProvider = Provider.of<BudgetProvider>(context, listen: false);
+            final savingsProvider = Provider.of<SavingsProvider>(context, listen: false);
             await Future.wait([
               transactionProvider.fetchTransactions(authProvider.user!.token),
               transactionProvider.fetchDashboardData(authProvider.user!.token),
               budgetProvider.loadData(authProvider.user!.id),
+              savingsProvider.loadGoals(authProvider.user!.id),
             ]);
           }
         },
@@ -351,6 +361,31 @@ class DashboardScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.shield_outlined, color: Color(0xFFE2ECE0), size: 14),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Jatah belanja aman: ${currencyFormat.format(safeDailySpend)}/hari (sisa $daysRemaining hari)',
+                              style: const TextStyle(
+                                color: Color(0xFFE2ECE0),
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -448,6 +483,13 @@ class DashboardScreen extends StatelessWidget {
             const FadeSlideEntrance(
               delay: Duration(milliseconds: 260),
               child: BudgetCard(),
+            ),
+            const SizedBox(height: 16),
+
+            // Celengan Impian (Savings Goals)
+            const FadeSlideEntrance(
+              delay: Duration(milliseconds: 280),
+              child: SavingsGoalsCard(),
             ),
             const SizedBox(height: 16),
 
