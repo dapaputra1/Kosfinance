@@ -9,7 +9,9 @@ import 'package:kos_finance_app/widgets/custom_text_field.dart';
 import 'package:intl/intl.dart';
 
 class AddTransactionScreen extends StatefulWidget {
-  const AddTransactionScreen({super.key});
+  final Transaction? transaction;
+
+  const AddTransactionScreen({super.key, this.transaction});
 
   @override
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -27,7 +29,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    final t = widget.transaction;
+    final initialIndex = (t != null && t.type == TransactionType.expense) ? 1 : 0;
+    _tabController = TabController(length: 2, vsync: this, initialIndex: initialIndex);
+    if (t != null) {
+      _titleController.text = t.title;
+      _amountController.text =
+          t.amount % 1 == 0 ? t.amount.toInt().toString() : t.amount.toString();
+      _noteController.text = t.note ?? '';
+      _selectedDate = t.date;
+      _selectedCategoryId = t.categoryId;
+    }
   }
 
   @override
@@ -67,20 +79,39 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
 
       if (authProvider.user == null) return;
 
-      final transaction = Transaction(
-        userId: authProvider.user!.id,
-        title: _titleController.text.trim(),
-        amount: double.parse(_amountController.text.replaceAll(',', '')),
-        date: _selectedDate,
-        type: _tabController.index == 0 ? TransactionType.income : TransactionType.expense,
-        categoryId: _selectedCategoryId!,
-        note: _noteController.text.trim(),
-      );
+      final isExpense = _tabController.index == 1;
+      final type = isExpense ? TransactionType.expense : TransactionType.income;
+      final amount = double.parse(_amountController.text.replaceAll(',', ''));
 
-      final success = await transactionProvider.addTransaction(
-        transaction,
-        authProvider.user!.token,
-      );
+      bool success;
+      if (widget.transaction != null) {
+        final updatedTx = widget.transaction!.copyWith(
+          title: _titleController.text.trim(),
+          amount: amount,
+          date: _selectedDate,
+          type: type,
+          categoryId: _selectedCategoryId!,
+          note: _noteController.text.trim(),
+        );
+        success = await transactionProvider.updateTransaction(
+          updatedTx,
+          authProvider.user!.token,
+        );
+      } else {
+        final newTx = Transaction(
+          userId: authProvider.user!.id,
+          title: _titleController.text.trim(),
+          amount: amount,
+          date: _selectedDate,
+          type: type,
+          categoryId: _selectedCategoryId!,
+          note: _noteController.text.trim(),
+        );
+        success = await transactionProvider.addTransaction(
+          newTx,
+          authProvider.user!.token,
+        );
+      }
 
       if (success && mounted) {
         Navigator.of(context).pop();
@@ -94,7 +125,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Transaction'),
+        title: Text(widget.transaction != null ? 'Edit Transaction' : 'Add Transaction'),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -194,7 +225,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
             ),
             const SizedBox(height: 24),
             CustomButton(
-              text: 'Save Transaction',
+              text: widget.transaction != null ? 'Update Transaction' : 'Save Transaction',
               isLoading: transactionProvider.isLoading,
               onPressed: _saveTransaction,
             ),

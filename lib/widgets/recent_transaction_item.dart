@@ -5,11 +5,13 @@ import 'package:intl/intl.dart';
 class RecentTransactionItem extends StatelessWidget {
   final Transaction transaction;
   final VoidCallback onDelete;
+  final VoidCallback? onEdit;
 
   const RecentTransactionItem({
     super.key,
     required this.transaction,
     required this.onDelete,
+    this.onEdit,
   });
 
   @override
@@ -48,6 +50,7 @@ class RecentTransactionItem extends StatelessWidget {
               : Colors.red,
         ),
       ),
+      onTap: onEdit,
       onLongPress: () {
         showDialog(
           context: context,

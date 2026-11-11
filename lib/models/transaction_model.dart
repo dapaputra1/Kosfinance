@@ -51,4 +51,30 @@ class Transaction {
       'note': note,
     };
   }
+
+  Transaction copyWith({
+    int? id,
+    int? userId,
+    String? title,
+    double? amount,
+    DateTime? date,
+    TransactionType? type,
+    int? categoryId,
+    String? note,
+    String? categoryName,
+    String? categoryIcon,
+  }) {
+    return Transaction(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      amount: amount ?? this.amount,
+      date: date ?? this.date,
+      type: type ?? this.type,
+      categoryId: categoryId ?? this.categoryId,
+      note: note ?? this.note,
+      categoryName: categoryName ?? this.categoryName,
+      categoryIcon: categoryIcon ?? this.categoryIcon,
+    );
+  }
 }

@@ -4,6 +4,7 @@ import 'package:kos_finance_app/providers/auth_provider.dart';
 import 'package:kos_finance_app/providers/transaction_provider.dart';
 import 'package:kos_finance_app/models/transaction_model.dart';
 import 'package:kos_finance_app/widgets/transaction_item.dart';
+import 'package:kos_finance_app/screens/add_transaction_screen.dart';
 import 'package:intl/intl.dart';
 
 class TransactionsScreen extends StatefulWidget {
@@ -154,6 +155,13 @@ class _TransactionsScreenState extends State<TransactionsScreen> with SingleTick
           final transaction = transactions[index];
           return TransactionItem(
             transaction: transaction,
+            onEdit: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => AddTransactionScreen(transaction: transaction),
+                ),
+              );
+            },
             onDelete: () async {
               if (transaction.id != null && authProvider.user != null) {
                 await transactionProvider.deleteTransaction(

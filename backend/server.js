@@ -156,6 +156,41 @@ app.post("/api/transactions", authenticateToken, async (req, res) => {
   }
 })
 
+app.put("/api/transactions/:id", authenticateToken, async (req, res) => {
+  try {
+    const { title, amount, date, type, category_id, note } = req.body
+
+    const [transaction] = await pool.query(
+      "SELECT * FROM transactions WHERE id = ? AND user_id = ?",
+      [req.params.id, req.user.id]
+    )
+
+    if (transaction.length === 0) {
+      return res.status(404).json({ message: "Transaction not found" })
+    }
+
+    await pool.query(
+      `UPDATE transactions 
+       SET title = ?, amount = ?, date = ?, type = ?, category_id = ?, note = ? 
+       WHERE id = ? AND user_id = ?`,
+      [title, amount, date, type, category_id, note, req.params.id, req.user.id]
+    )
+
+    const [updatedTransaction] = await pool.query(
+      `SELECT t.*, c.name as category_name, c.icon as category_icon 
+       FROM transactions t 
+       LEFT JOIN categories c ON t.category_id = c.id 
+       WHERE t.id = ?`,
+      [req.params.id]
+    )
+
+    res.json(updatedTransaction[0])
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: "Server error" })
+  }
+})
+
 app.delete("/api/transactions/:id", authenticateToken, async (req, res) => {
   try {
     const [transaction] = await pool.query("SELECT * FROM transactions WHERE id = ? AND user_id = ?", [
@@ -214,12 +249,36 @@ app.get("/api/dashboard", authenticateToken, async (req, res) => {
       [req.user.id],
     )
 
+    // Get category expense breakdown for current month
+    const [categoryExpenses] = await pool.query(
+      `SELECT c.id, c.name, c.icon, COALESCE(SUM(t.amount), 0) as total
+       FROM transactions t
+       JOIN categories c ON t.category_id = c.id
+       WHERE t.user_id = ? AND t.type = 'expense'
+         AND MONTH(t.date) = MONTH(CURRENT_DATE())
+         AND YEAR(t.date) = YEAR(CURRENT_DATE())
+       GROUP BY c.id, c.name, c.icon
+       ORDER BY total DESC`,
+      [req.user.id],
+    )
+
+    const totInc = parseFloat(totalIncome[0].total) || 0
+    const totExp = parseFloat(totalExpense[0].total) || 0
+    const mInc = parseFloat(monthlyIncome[0].total) || 0
+    const mExp = parseFloat(monthlyExpense[0].total) || 0
+
     res.json({
-      totalIncome: totalIncome[0].total,
-      totalExpense: totalExpense[0].total,
-      balance: totalIncome[0].total - totalExpense[0].total,
-      monthlyIncome: monthlyIncome[0].total,
-      monthlyExpense: monthlyExpense[0].total,
+      totalIncome: totInc,
+      totalExpense: totExp,
+      balance: totInc - totExp,
+      monthlyIncome: mInc,
+      monthlyExpense: mExp,
+      categoryExpenses: categoryExpenses.map((c) => ({
+        id: c.id,
+        name: c.name,
+        icon: c.icon,
+        total: parseFloat(c.total) || 0,
+      })),
     })
   } catch (error) {
     console.error(error)

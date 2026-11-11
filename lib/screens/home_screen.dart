@@ -7,6 +7,7 @@ import 'package:kos_finance_app/screens/profile_screen.dart';
 import 'package:kos_finance_app/screens/transactions_screen.dart';
 import 'package:kos_finance_app/widgets/dashboard_card.dart';
 import 'package:kos_finance_app/widgets/recent_transaction_item.dart';
+import 'package:kos_finance_app/widgets/spending_pie_chart.dart';
 import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -209,6 +210,12 @@ class DashboardScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 20),
+                  SpendingPieChart(
+                    categoryExpenses: transactionProvider.dashboardData['categoryExpenses'] is List
+                        ? (transactionProvider.dashboardData['categoryExpenses'] as List)
+                        : [],
+                  ),
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -252,6 +259,13 @@ class DashboardScreen extends StatelessWidget {
                         final transaction = transactionProvider.recentTransactions[index];
                         return RecentTransactionItem(
                           transaction: transaction,
+                          onEdit: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => AddTransactionScreen(transaction: transaction),
+                              ),
+                            );
+                          },
                           onDelete: () async {
                             if (transaction.id != null && authProvider.user != null) {
                               await transactionProvider.deleteTransaction(

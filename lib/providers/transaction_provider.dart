@@ -92,6 +92,30 @@ class TransactionProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateTransaction(Transaction transaction, String token) async {
+    if (transaction.id == null) return false;
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final updated = await ApiService.updateTransaction(transaction.id!, transaction, token);
+      final index = _transactions.indexWhere((t) => t.id == transaction.id);
+      if (index != -1) {
+        _transactions[index] = updated;
+      }
+      await fetchDashboardData(token); // Refresh dashboard data
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> deleteTransaction(int id, String token) async {
     _isLoading = true;
     _error = null;

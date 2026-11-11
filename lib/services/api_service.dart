@@ -5,8 +5,11 @@ import 'package:kos_finance_app/models/transaction_model.dart';
 import 'package:kos_finance_app/models/category_model.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2:3000/api'; // For Android emulator
-  // static const String baseUrl = 'http://localhost:3000/api'; // For iOS simulator
+  static String baseUrl = 'http://10.0.2.2:3000/api'; // For Android emulator
+
+  static void setBaseUrl(String url) {
+    baseUrl = url;
+  }
 
   // Auth endpoints
   static Future<User> login(String email, String password) async {
@@ -69,6 +72,23 @@ class ApiService {
       return Transaction.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to add transaction');
+    }
+  }
+
+  static Future<Transaction> updateTransaction(int id, Transaction transaction, String token) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/transactions/$id'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(transaction.toJson()),
+    );
+
+    if (response.statusCode == 200) {
+      return Transaction.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception(jsonDecode(response.body)['message'] ?? 'Failed to update transaction');
     }
   }
 

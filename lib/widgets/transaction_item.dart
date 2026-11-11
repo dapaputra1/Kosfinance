@@ -5,11 +5,13 @@ import 'package:intl/intl.dart';
 class TransactionItem extends StatelessWidget {
   final Transaction transaction;
   final VoidCallback onDelete;
+  final VoidCallback? onEdit;
 
   const TransactionItem({
     super.key,
     required this.transaction,
     required this.onDelete,
+    this.onEdit,
   });
 
   @override
@@ -92,7 +94,14 @@ class TransactionItem extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton(
+                if (onEdit != null)
+                  TextButton.icon(
+                    onPressed: onEdit,
+                    icon: const Icon(Icons.edit_outlined, size: 16),
+                    label: const Text('Edit'),
+                  ),
+                const SizedBox(width: 8),
+                TextButton.icon(
                   onPressed: () {
                     showDialog(
                       context: context,
@@ -115,7 +124,8 @@ class TransactionItem extends StatelessWidget {
                       ),
                     );
                   },
-                  child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                  icon: const Icon(Icons.delete_outline, size: 16, color: Colors.red),
+                  label: const Text('Delete', style: TextStyle(color: Colors.red)),
                 ),
               ],
             ),
