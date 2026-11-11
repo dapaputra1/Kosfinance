@@ -38,30 +38,30 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const AppLogo(size: 120),
-            const SizedBox(height: 24),
-            const Text(
+            AppLogo(size: 120),
+            SizedBox(height: 24),
+            Text(
               'Kos Finance',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               'Manage your boarding house finances',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey,
               ),
             ),
-            const SizedBox(height: 48),
-            const CircularProgressIndicator(),
+            SizedBox(height: 48),
+            CircularProgressIndicator(),
           ],
         ),
       ),

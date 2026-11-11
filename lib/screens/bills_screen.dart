@@ -257,7 +257,7 @@ class _BillsScreenState extends State<BillsScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.blue.withOpacity(0.3),
+                  color: Colors.blue.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -288,7 +288,7 @@ class _BillsScreenState extends State<BillsScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(

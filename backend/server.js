@@ -1,7 +1,7 @@
 const express = require("express")
 const mysql = require("mysql2/promise")
 const cors = require("cors")
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const dotenv = require("dotenv")
 
@@ -250,8 +250,32 @@ app.delete("/api/transactions/:id", authenticateToken, async (req, res) => {
 // Category routes
 app.get("/api/categories", authenticateToken, async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM categories")
+    const [rows] = await pool.query("SELECT * FROM categories ORDER BY name ASC")
     res.json(rows)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: "Server error" })
+  }
+})
+
+app.post("/api/categories", authenticateToken, async (req, res) => {
+  try {
+    const { name, icon, type } = req.body
+    if (!name || !type) {
+      return res.status(400).json({ message: "Name and type are required" })
+    }
+
+    const [result] = await pool.query(
+      "INSERT INTO categories (name, icon, type) VALUES (?, ?, ?)",
+      [name.trim(), icon || "tag", type],
+    )
+
+    const [newCategory] = await pool.query(
+      "SELECT * FROM categories WHERE id = ?",
+      [result.insertId],
+    )
+
+    res.status(201).json(newCategory[0])
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: "Server error" })

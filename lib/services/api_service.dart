@@ -165,6 +165,27 @@ class ApiService {
     }
   }
 
+  static Future<Category> addCategory(String name, String icon, String type, String token) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/categories'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'name': name,
+        'icon': icon,
+        'type': type,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      return Category.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception(jsonDecode(response.body)['message'] ?? 'Failed to add category');
+    }
+  }
+
   // Dashboard data
   static Future<Map<String, dynamic>> getDashboardData(String token) async {
     final response = await http.get(

@@ -56,6 +56,25 @@ class TransactionProvider extends ChangeNotifier {
     }
   }
 
+  Future<Category?> addCategory(String name, String icon, String type, String token) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final newCategory = await ApiService.addCategory(name, icon, type, token);
+      _categories.add(newCategory);
+      _isLoading = false;
+      notifyListeners();
+      return newCategory;
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      notifyListeners();
+      return null;
+    }
+  }
+
   Future<void> fetchDashboardData(String token) async {
     _isLoading = true;
     _error = null;

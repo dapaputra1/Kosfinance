@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:kos_finance_app/providers/auth_provider.dart';
 import 'package:kos_finance_app/providers/transaction_provider.dart';
@@ -54,6 +55,112 @@ class _TransactionsScreenState extends State<TransactionsScreen> with SingleTick
     super.dispose();
   }
 
+  void _shareMonthlyReport(
+    BuildContext context,
+    TransactionProvider transactionProvider,
+    AuthProvider authProvider,
+  ) {
+    final currencyFormat =
+        NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final monthTransactions =
+        _filterTransactions(transactionProvider.transactions, null);
+
+    final double totalIncome = monthTransactions
+        .where((t) => t.type == TransactionType.income)
+        .fold(0.0, (sum, t) => sum + t.amount);
+    final double totalExpense = monthTransactions
+        .where((t) => t.type == TransactionType.expense)
+        .fold(0.0, (sum, t) => sum + t.amount);
+    final double balance = totalIncome - totalExpense;
+
+    final buffer = StringBuffer();
+    buffer.writeln('🏠 LAPORAN KEUANGAN KOS - $_selectedMonth');
+    buffer.writeln('👤 Nama: ${authProvider.user?.name ?? "Anak Kos"}');
+    buffer.writeln('━━━━━━━━━━━━━━━━━━━━━━━━');
+    buffer.writeln('💰 Pemasukan  : ${currencyFormat.format(totalIncome)}');
+    buffer.writeln('💸 Pengeluaran: ${currencyFormat.format(totalExpense)}');
+    buffer.writeln('💵 Sisa Kas   : ${currencyFormat.format(balance)}');
+    buffer.writeln('━━━━━━━━━━━━━━━━━━━━━━━━');
+    buffer.writeln('📝 Rincian Transaksi:');
+
+    if (monthTransactions.isEmpty) {
+      buffer.writeln('(Belum ada transaksi di bulan ini)');
+    } else {
+      for (final tx in monthTransactions) {
+        final symbol = tx.type == TransactionType.income ? '[+]' : '[-]';
+        final cat = tx.categoryName != null ? ' (${tx.categoryName})' : '';
+        buffer.writeln(
+            '$symbol ${DateFormat("dd/MM").format(tx.date)} ${tx.title}$cat: ${currencyFormat.format(tx.amount)}');
+      }
+    }
+    buffer.writeln('━━━━━━━━━━━━━━━━━━━━━━━━');
+    buffer.writeln('Dicatat via Aplikasi Kos Finance');
+
+    final reportText = buffer.toString();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.share, color: Colors.blue.shade700),
+                const SizedBox(width: 8),
+                const Text(
+                  'Bagikan Laporan Keuangan',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              constraints: const BoxConstraints(maxHeight: 250),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: SingleChildScrollView(
+                child: Text(
+                  reportText,
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: reportText));
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                        'Laporan berhasil disalin! Siap dikirim ke WhatsApp/Orang Tua.'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              icon: const Icon(Icons.copy),
+              label: const Text('Salin Laporan ke Clipboard'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -62,6 +169,17 @@ class _TransactionsScreenState extends State<TransactionsScreen> with SingleTick
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transactions'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            tooltip: 'Bagikan Laporan',
+            onPressed: () => _shareMonthlyReport(
+              context,
+              transactionProvider,
+              authProvider,
+            ),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -76,7 +194,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> with SingleTick
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: DropdownButtonFormField<String>(
-              value: _selectedMonth,
+              initialValue: _selectedMonth,
               decoration: const InputDecoration(
                 labelText: 'Month',
                 border: OutlineInputBorder(),

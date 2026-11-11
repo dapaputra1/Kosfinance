@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:kos_finance_app/providers/auth_provider.dart';
 import 'package:kos_finance_app/providers/transaction_provider.dart';
 import 'package:kos_finance_app/models/transaction_model.dart';
-import 'package:kos_finance_app/models/category_model.dart';
 import 'package:kos_finance_app/widgets/custom_button.dart';
 import 'package:kos_finance_app/widgets/custom_text_field.dart';
 import 'package:intl/intl.dart';
@@ -49,6 +48,55 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
     _noteController.dispose();
     _tabController.dispose();
     super.dispose();
+  }
+
+  void _showAddCategoryDialog(BuildContext context) {
+    final controller = TextEditingController();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Tambah Kategori Baru'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Nama Kategori',
+            hintText: 'e.g. Laundry, Buku, Fotokopi',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final name = controller.text.trim();
+              if (name.isNotEmpty && authProvider.user != null) {
+                final type = _tabController.index == 0 ? 'income' : 'expense';
+                final newCat = await transactionProvider.addCategory(
+                  name,
+                  'tag',
+                  type,
+                  authProvider.user!.token,
+                );
+                if (newCat != null) {
+                  setState(() {
+                    _selectedCategoryId = newCat.id;
+                  });
+                }
+                if (context.mounted) Navigator.of(context).pop();
+              }
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -188,12 +236,22 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Category',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Kategori',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: () => _showAddCategoryDialog(context),
+                  icon: const Icon(Icons.add, size: 16),
+                  label: const Text('Kategori Baru'),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             if (transactionProvider.isLoading)
