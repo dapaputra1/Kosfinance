@@ -61,20 +61,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_selectedIndex],
-      floatingActionButton: AnimatedTapScale(
-        onTap: () {
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const AddTransactionScreen()),
           );
         },
-        child: FloatingActionButton(
-          onPressed: null,
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 3,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: const Icon(Icons.add_rounded, size: 28),
-        ),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: const Icon(Icons.add_rounded, size: 28),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: Container(

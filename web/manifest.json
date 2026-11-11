@@ -1,11 +1,11 @@
 {
-    "name": "kos_finance_app",
-    "short_name": "kos_finance_app",
+    "name": "Kos Finance",
+    "short_name": "Kos Finance",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F7F9F6",
+    "theme_color": "#5C7057",
+    "description": "Aplikasi Pengelola Keuangan Anak Kos",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -33,7 +33,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
     final initialIndex = (t != null && t.type == TransactionType.expense) ? 1 : 0;
     _tabController = TabController(length: 2, vsync: this, initialIndex: initialIndex);
     _tabController.addListener(() {
-      if (mounted) setState(() {});
+      if (mounted) {
+        _syncCategoryForTab();
+        setState(() {});
+      }
     });
 
     if (t != null) {
@@ -43,6 +46,45 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
       _noteController.text = t.note ?? '';
       _selectedDate = t.date;
       _selectedCategoryId = t.categoryId;
+    }
+
+    // Pre-fetch categories if empty and select default
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final tp = Provider.of<TransactionProvider>(context, listen: false);
+      final ap = Provider.of<AuthProvider>(context, listen: false);
+      final token = ap.user?.token ?? 'offline_token_1';
+      if (tp.categories.isEmpty) {
+        await tp.fetchCategories(token);
+      }
+      if (mounted && _selectedCategoryId == null) {
+        _syncCategoryForTab();
+      }
+    });
+  }
+
+  void _syncCategoryForTab() {
+    final tp = Provider.of<TransactionProvider>(context, listen: false);
+    final isExpense = _tabController.index == 1;
+    final currentCats = tp.getCategoriesByType(isExpense ? 'expense' : 'income');
+    if (currentCats.isNotEmpty) {
+      setState(() {
+        _selectedCategoryId = currentCats.first.id;
+      });
+    }
+  }
+
+  String _formatSelectedDate(DateTime date) {
+    try {
+      return DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(date);
+    } catch (_) {
+      const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+      const months = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      ];
+      final dayName = days[date.weekday - 1];
+      final monthName = months[date.month - 1];
+      return '$dayName, ${date.day} $monthName ${date.year}';
     }
   }
 
@@ -80,13 +122,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
           ElevatedButton(
             onPressed: () async {
               final name = controller.text.trim();
-              if (name.isNotEmpty && authProvider.user != null) {
+              if (name.isNotEmpty) {
                 final type = _tabController.index == 0 ? 'income' : 'expense';
+                final token = authProvider.user?.token ?? 'offline_token_1';
                 final newCat = await transactionProvider.addCategory(
                   name,
                   'tag',
                   type,
-                  authProvider.user!.token,
+                  token,
                 );
                 if (newCat != null) {
                   setState(() {
@@ -132,7 +175,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
 
-      if (authProvider.user == null) return;
+      final user = authProvider.user;
+      final userId = user?.id ?? 1;
+      final token = user?.token ?? 'offline_token_1';
 
       final isExpense = _tabController.index == 1;
       final type = isExpense ? TransactionType.expense : TransactionType.income;
@@ -150,11 +195,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
         );
         success = await transactionProvider.updateTransaction(
           updatedTx,
-          authProvider.user!.token,
+          token,
         );
       } else {
         final newTx = Transaction(
-          userId: authProvider.user!.id,
+          userId: userId,
           title: _titleController.text.trim(),
           amount: amount,
           date: _selectedDate,
@@ -164,11 +209,23 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
         );
         success = await transactionProvider.addTransaction(
           newTx,
-          authProvider.user!.token,
+          token,
         );
       }
 
       if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              widget.transaction != null
+                  ? 'Transaksi berhasil diperbarui!'
+                  : 'Transaksi berhasil dicatat!',
+            ),
+            backgroundColor: AppColors.primary,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
         Navigator.of(context).pop();
       }
     }
@@ -332,7 +389,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
                             style: TextStyle(fontSize: 11, color: AppColors.textMuted),
                           ),
                           Text(
-                            DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(_selectedDate),
+                            _formatSelectedDate(_selectedDate),
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
