@@ -331,7 +331,7 @@ class _BillsScreenState extends State<BillsScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF3730A3), Color(0xFF4F46E5)],
+                  colors: [Color(0xFF1B433F), Color(0xFF2B635D)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -357,8 +357,8 @@ class _BillsScreenState extends State<BillsScreen> {
                               height: 8,
                               decoration: BoxDecoration(
                                 color: budgetProvider.pendingBillsCount > 0
-                                    ? const Color(0xFFFBBF24)
-                                    : const Color(0xFF34D399),
+                                    ? AppColors.cream
+                                    : AppColors.aqua,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -366,7 +366,7 @@ class _BillsScreenState extends State<BillsScreen> {
                             const Text(
                               'Tagihan Belum Lunas',
                               style: TextStyle(
-                                color: Color(0xFFE0E7FF),
+                                color: AppColors.aquaLight,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -406,7 +406,7 @@ class _BillsScreenState extends State<BillsScreen> {
                         const Text(
                           'Tertunda',
                           style: TextStyle(
-                            color: Color(0xFFE0E7FF),
+                            color: AppColors.aquaLight,
                             fontSize: 11,
                           ),
                         ),

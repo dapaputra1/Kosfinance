@@ -167,7 +167,7 @@ class DashboardScreen extends StatelessWidget {
                       height: 46,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF4F46E5), Color(0xFF818CF8)],
+                          colors: [AppColors.primary, AppColors.aqua],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -243,14 +243,14 @@ class DashboardScreen extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF4338CA), Color(0xFF312E81)],
+                  colors: [Color(0xFF1B433F), Color(0xFF2B635D)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4338CA).withValues(alpha: 0.3),
+                    color: AppColors.primary.withValues(alpha: 0.25),
                     blurRadius: 16,
                     offset: const Offset(0, 8),
                   ),
@@ -265,7 +265,7 @@ class DashboardScreen extends StatelessWidget {
                       Row(
                         children: [
                           Icon(Icons.account_balance_wallet_rounded,
-                              color: Colors.white.withValues(alpha: 0.85), size: 18),
+                              color: AppColors.aqua.withValues(alpha: 0.9), size: 18),
                           const SizedBox(width: 8),
                           Text(
                             'Total Saldo Kas',
@@ -280,13 +280,13 @@ class DashboardScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
+                          color: AppColors.aqua.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Text(
+                        child: const Text(
                           'IDR',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: AppColors.aqua,
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                           ),
@@ -312,7 +312,7 @@ class DashboardScreen extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.arrow_upward_rounded, color: Color(0xFF34D399), size: 16),
+                          const Icon(Icons.arrow_upward_rounded, color: AppColors.aqua, size: 16),
                           const SizedBox(width: 4),
                           Text(
                             currencyFormat.format(totalIncome),
@@ -326,7 +326,7 @@ class DashboardScreen extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          const Icon(Icons.arrow_downward_rounded, color: Color(0xFFF87171), size: 16),
+                          const Icon(Icons.arrow_downward_rounded, color: Color(0xFFF89A89), size: 16),
                           const SizedBox(width: 4),
                           Text(
                             currencyFormat.format(totalExpense),

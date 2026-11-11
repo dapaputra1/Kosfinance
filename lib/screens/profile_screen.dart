@@ -336,7 +336,7 @@ class ProfileScreen extends StatelessWidget {
                     height: 76,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF4F46E5), Color(0xFF818CF8)],
+                        colors: [AppColors.primary, AppColors.aqua],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -418,7 +418,7 @@ class ProfileScreen extends StatelessWidget {
               ),
               _buildSettingsTile(
                 icon: Icons.dns_rounded,
-                iconColor: const Color(0xFF0284C7),
+                iconColor: AppColors.primary,
                 title: 'Koneksi Server API',
                 subtitle: 'Ganti alamat backend (Localhost / Android)',
                 onTap: () => showServerSettingsDialog(context),
@@ -522,7 +522,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFFFECDD3), width: 1.5),
+                side: BorderSide(color: AppColors.expense.withValues(alpha: 0.35), width: 1.5),
                 backgroundColor: AppColors.expenseLight.withValues(alpha: 0.4),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(

@@ -63,10 +63,10 @@ void showServerSettingsDialog(BuildContext context) {
                 },
               ),
               ActionChip(
-                avatar: const Icon(Icons.phone_android_rounded, size: 16, color: Color(0xFF10B981)),
+                avatar: const Icon(Icons.phone_android_rounded, size: 16, color: AppColors.sageDark),
                 label: const Text('Android Emulator (10.0.2.2)'),
                 labelStyle: const TextStyle(fontSize: 12),
-                backgroundColor: const Color(0xFFD1FAE5),
+                backgroundColor: AppColors.sageLight,
                 side: BorderSide.none,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 onPressed: () {

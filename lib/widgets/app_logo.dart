@@ -15,7 +15,11 @@ class AppLogo extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        gradient: const LinearGradient(
+          colors: [AppColors.primary, Color(0xFF33706A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(size * 0.28),
         boxShadow: [
           BoxShadow(
@@ -37,12 +41,12 @@ class AppLogo extends StatelessWidget {
             right: size * 0.22,
             top: size * 0.24,
             child: Container(
-              width: size * 0.18,
-              height: size * 0.18,
+              width: size * 0.20,
+              height: size * 0.20,
               decoration: BoxDecoration(
-                color: AppColors.warning,
+                color: AppColors.cream,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 1.5),
+                border: Border.all(color: AppColors.primaryDark, width: 1.5),
               ),
             ),
           ),
