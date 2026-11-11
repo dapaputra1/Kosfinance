@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kos_finance_app/models/user_model.dart';
@@ -6,13 +8,27 @@ import 'package:kos_finance_app/models/transaction_model.dart';
 import 'package:kos_finance_app/models/category_model.dart';
 
 class ApiService {
-  static String baseUrl = 'http://10.0.2.2:3000/api'; // For Android emulator
+  static String get defaultBaseUrl {
+    if (kIsWeb) {
+      return 'http://localhost:3000/api';
+    }
+    try {
+      if (Platform.isAndroid) {
+        return 'http://10.0.2.2:3000/api';
+      }
+    } catch (_) {}
+    return 'http://localhost:3000/api';
+  }
+
+  static String baseUrl = defaultBaseUrl;
 
   static Future<void> initBaseUrl() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString('custom_base_url');
     if (saved != null && saved.isNotEmpty) {
       baseUrl = saved;
+    } else {
+      baseUrl = defaultBaseUrl;
     }
   }
 

@@ -6,6 +6,7 @@ import 'package:kos_finance_app/screens/home_screen.dart';
 import 'package:kos_finance_app/widgets/custom_button.dart';
 import 'package:kos_finance_app/widgets/custom_text_field.dart';
 import 'package:kos_finance_app/widgets/app_logo.dart';
+import 'package:kos_finance_app/widgets/server_settings_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -48,6 +49,17 @@ class _LoginScreenState extends State<LoginScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Pengaturan Server API',
+            onPressed: () => showServerSettingsDialog(context),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

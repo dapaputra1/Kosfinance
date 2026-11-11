@@ -4,6 +4,7 @@ import 'package:kos_finance_app/providers/auth_provider.dart';
 import 'package:kos_finance_app/screens/home_screen.dart';
 import 'package:kos_finance_app/widgets/custom_button.dart';
 import 'package:kos_finance_app/widgets/custom_text_field.dart';
+import 'package:kos_finance_app/widgets/server_settings_dialog.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -54,6 +55,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Register'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Pengaturan Server API',
+            onPressed: () => showServerSettingsDialog(context),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Center(
