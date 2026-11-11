@@ -49,6 +49,25 @@ class AuthProvider extends ChangeNotifier {
     }));
   }
 
+  String _formatErrorMessage(dynamic e) {
+    final str = e.toString();
+    if (str.contains('SocketException') ||
+        str.contains('Connection failed') ||
+        str.contains('ClientException')) {
+      return 'Tidak dapat terhubung ke server di (${ApiService.baseUrl}).\n'
+          'Jika Anda menggunakan HP fisik, pastikan HP & laptop di Wi-Fi yang sama dan ganti alamat server ke IP laptop Anda.';
+    }
+    if (str.contains('Email already in use')) {
+      return 'Email ini sudah terdaftar. Silakan masuk atau gunakan email lain.';
+    }
+    if (str.contains('Invalid credentials') ||
+        str.contains('401') ||
+        str.toLowerCase().contains('invalid')) {
+      return 'Email atau kata sandi salah. Silakan periksa kembali.';
+    }
+    return str.replaceAll('Exception: ', '');
+  }
+
   Future<bool> login(String email, String password) async {
     _isLoading = true;
     _error = null;
@@ -63,7 +82,7 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _isLoading = false;
-      _error = e.toString();
+      _error = _formatErrorMessage(e);
       notifyListeners();
       return false;
     }
@@ -83,7 +102,7 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _isLoading = false;
-      _error = e.toString();
+      _error = _formatErrorMessage(e);
       notifyListeners();
       return false;
     }

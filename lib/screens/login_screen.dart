@@ -102,16 +102,38 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppColors.expense.withValues(alpha: 0.3)),
                       ),
-                      child: Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.error_outline_rounded, color: AppColors.expense, size: 20),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              authProvider.error!,
-                              style: const TextStyle(color: AppColors.expense, fontSize: 13),
-                            ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.error_outline_rounded, color: AppColors.expense, size: 20),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  authProvider.error!,
+                                  style: const TextStyle(color: AppColors.expense, fontSize: 13, height: 1.3),
+                                ),
+                              ),
+                            ],
                           ),
+                          if (authProvider.error!.contains('server') || authProvider.error!.contains('terhubung')) ...[
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton.icon(
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  visualDensity: VisualDensity.compact,
+                                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                                ),
+                                icon: const Icon(Icons.dns_rounded, size: 14, color: AppColors.primary),
+                                label: const Text('Atur Alamat Server', style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.bold)),
+                                onPressed: () => showServerSettingsDialog(context),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
