@@ -158,11 +158,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     prefixIcon: Icons.mail_outline_rounded,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
+                      final val = value?.trim() ?? '';
+                      if (val.isEmpty) {
                         return 'Masukkan alamat email Anda';
                       }
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                        return 'Format email tidak valid';
+                      if (!RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').hasMatch(val)) {
+                        return 'Format email tidak valid (contoh: nama@email.com)';
                       }
                       return null;
                     },
