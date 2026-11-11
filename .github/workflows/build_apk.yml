@@ -52,16 +52,17 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: latest
-          name: KosFinance Android APK (Super Ringan < 20MB)
+          tag_name: v1.1.0
+          name: KosFinance v1.1.0 (Logo Resmi & Anti-Blank Screen)
           body: |
-            Pilihan unduhan file APK KosFinance (Semua berukuran jauh di bawah 50 MB):
+            Pembaruan Resmi KosFinance v1.1.0:
+            - **Logo Baru Kos Finance**: Ikon dompet modern resmi menggantikan logo default Flutter.
+            - **Perbaikan Blank Page**: Form Tambah Transaksi kini 100% lancar dan anti-crash.
+            - **Mode Offline Penuh**: Berjalan mandiri tanpa butuh server atau internet.
             
-            1. **`KosFinance-Universal.apk`** (~18 MB):
-               - Bisa diinstal di **semua tipe HP Android** (Samsung, Xiaomi, Oppo, Vivo, Realme, dll).
-            
-            2. **`KosFinance-Arm64-SuperRingan.apk`** (~12 MB):
-               - Versi paling hemat memori, dioptimalkan khusus untuk 99% HP Android modern (64-bit).
+            Unduh file APK di bawah ini:
+            - **`KosFinance-Arm64-SuperRingan.apk`** (~19 MB - Direkomendasikan untuk HP Android).
+            - **`KosFinance-Universal.apk`** (~55 MB - Kompatibel untuk semua tipe HP Android).
           files: |
             build/app/outputs/flutter-apk/KosFinance-Universal.apk
             build/app/outputs/flutter-apk/KosFinance-Arm64-SuperRingan.apk
