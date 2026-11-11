@@ -5,13 +5,13 @@ import 'package:intl/intl.dart';
 
 class RecentTransactionItem extends StatelessWidget {
   final Transaction transaction;
-  final VoidCallback onDelete;
+  final VoidCallback? onDelete;
   final VoidCallback? onEdit;
 
   const RecentTransactionItem({
     super.key,
     required this.transaction,
-    required this.onDelete,
+    this.onDelete,
     this.onEdit,
   });
 

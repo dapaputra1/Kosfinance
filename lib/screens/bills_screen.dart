@@ -7,6 +7,7 @@ import 'package:kos_finance_app/providers/auth_provider.dart';
 import 'package:kos_finance_app/providers/budget_provider.dart';
 import 'package:kos_finance_app/providers/transaction_provider.dart';
 import 'package:kos_finance_app/theme/app_theme.dart';
+import 'package:kos_finance_app/widgets/animated_popup.dart';
 import 'package:kos_finance_app/widgets/custom_button.dart';
 import 'package:kos_finance_app/widgets/custom_text_field.dart';
 
@@ -188,7 +189,7 @@ class _BillsScreenState extends State<BillsScreen> {
 
     final currency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAnimatedPopup<bool>(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -331,7 +332,7 @@ class _BillsScreenState extends State<BillsScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF1B433F), Color(0xFF2B635D)],
+                  colors: [Color(0xFF384935), Color(0xFF5C7057)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -358,7 +359,7 @@ class _BillsScreenState extends State<BillsScreen> {
                               decoration: BoxDecoration(
                                 color: budgetProvider.pendingBillsCount > 0
                                     ? AppColors.cream
-                                    : AppColors.aqua,
+                                    : AppColors.primaryAccent,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -366,7 +367,7 @@ class _BillsScreenState extends State<BillsScreen> {
                             const Text(
                               'Tagihan Belum Lunas',
                               style: TextStyle(
-                                color: AppColors.aquaLight,
+                                color: AppColors.primaryLight,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -406,7 +407,7 @@ class _BillsScreenState extends State<BillsScreen> {
                         const Text(
                           'Tertunda',
                           style: TextStyle(
-                            color: AppColors.aquaLight,
+                            color: AppColors.primaryLight,
                             fontSize: 11,
                           ),
                         ),

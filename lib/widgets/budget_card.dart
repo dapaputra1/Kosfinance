@@ -5,6 +5,7 @@ import 'package:kos_finance_app/providers/auth_provider.dart';
 import 'package:kos_finance_app/providers/budget_provider.dart';
 import 'package:kos_finance_app/providers/transaction_provider.dart';
 import 'package:kos_finance_app/theme/app_theme.dart';
+import 'package:kos_finance_app/widgets/animated_popup.dart';
 
 class BudgetCard extends StatelessWidget {
   const BudgetCard({super.key});
@@ -18,7 +19,7 @@ class BudgetCard extends StatelessWidget {
           : '',
     );
 
-    showDialog(
+    showAnimatedPopup(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Target Budget Bulanan'),

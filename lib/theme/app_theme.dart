@@ -1,72 +1,64 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // --- The 3 Core Requested Palette Tones ---
-  // 1. Aqua Mint (#8AD6D1)
-  static const Color aqua = Color(0xFF8AD6D1);
-  static const Color aquaLight = Color(0xFFE5F7F6);
-  static const Color aquaDark = Color(0xFF1F524E);
-
-  // 2. Butter Cream (#FFF0C5)
-  static const Color cream = Color(0xFFFFF0C5);
-  static const Color creamLight = Color(0xFFFFFDF5);
-  static const Color creamDark = Color(0xFF8A6D1D);
-
-  // 3. Sage Green (#89A482)
-  static const Color sage = Color(0xFF89A482);
-  static const Color sageLight = Color(0xFFEDF4EC);
-  static const Color sageDark = Color(0xFF355231);
-
-  // --- Brand Semantic Roles ---
-  // Primary: Rich Pine Teal (anchored to 8AD6D1)
-  static const Color primary = Color(0xFF24524E);
-  static const Color primaryDark = Color(0xFF163734);
-  static const Color primaryLight = Color(0xFFE5F7F6);
-  static const Color primaryAccent = Color(0xFF8AD6D1);
+  // --- The Primary Forest Olive Anchor (#5C7057) ---
+  static const Color primary = Color(0xFF5C7057);
+  static const Color primaryDark = Color(0xFF3B4A37);
+  static const Color primaryLight = Color(0xFFEBF1EA);
+  static const Color primaryAccent = Color(0xFF86A380);
 
   // Financial Semantics:
-  // Income: Sage Green (89A482)
-  static const Color income = Color(0xFF89A482);
-  static const Color incomeLight = Color(0xFFEDF4EC);
-  static const Color incomeDark = Color(0xFF355231);
+  // Income: Botanical Sage Green
+  static const Color income = Color(0xFF4E8752);
+  static const Color incomeLight = Color(0xFFE8F3E8);
+  static const Color incomeDark = Color(0xFF2C562F);
 
-  // Expense: Warm Terracotta Clay (harmonizes with Sage, Mint, and Cream)
-  static const Color expense = Color(0xFFD65C47);
-  static const Color expenseLight = Color(0xFFFDEEEC);
-  static const Color expenseDark = Color(0xFF8C3122);
+  // Expense: Warm Terracotta Earth
+  static const Color expense = Color(0xFFC75846);
+  static const Color expenseLight = Color(0xFFFBECE9);
+  static const Color expenseDark = Color(0xFF852D20);
 
-  // Warning & Budget: Butter Cream (FFF0C5) & Amber Gold
-  static const Color warning = Color(0xFFC48E1D);
-  static const Color warningLight = Color(0xFFFFF0C5); // Exact requested cream
+  // Warning & Gold Highlights
+  static const Color warning = Color(0xFFD69F34);
+  static const Color warningLight = Color(0xFFFBF4E4);
+
+  // Warm Cream & Sage Accents
+  static const Color cream = Color(0xFFFBF4E4);
+  static const Color creamLight = Color(0xFFFFFDF7);
+  static const Color creamDark = Color(0xFF9E741E);
+
+  static const Color sage = Color(0xFF5C7057);
+  static const Color sageLight = Color(0xFFEDF2EC);
+  static const Color sageDark = Color(0xFF384735);
 
   // Secondary Accents
-  static const Color purple = Color(0xFF7A7996);
-  static const Color purpleLight = Color(0xFFF1F0F7);
-  static const Color cyan = Color(0xFF8AD6D1); // Exact requested aqua
-  static const Color cyanLight = Color(0xFFE5F7F6);
+  static const Color purple = Color(0xFF76778D);
+  static const Color purpleLight = Color(0xFFF0F1F6);
+  static const Color cyan = Color(0xFF5C8A82);
+  static const Color cyanLight = Color(0xFFEBF3F2);
 
-  // --- Canvas & Neutrals ---
-  static const Color background = Color(0xFFF7FAF8); // Clean, warm mineral canvas
+  // Canvas & Neutrals
+  static const Color background = Color(0xFFF6F8F5);
   static const Color surface = Colors.white;
-  static const Color surfaceMuted = Color(0xFFEFF4F1);
-  static const Color border = Color(0xFFDCE6DF);
-  static const Color textPrimary = Color(0xFF13251E);
-  static const Color textSecondary = Color(0xFF4C6358);
-  static const Color textMuted = Color(0xFF82988C);
+  static const Color surfaceMuted = Color(0xFFEEF3EC);
+  static const Color border = Color(0xFFDBE3DA);
+  static const Color textPrimary = Color(0xFF1B261A);
+  static const Color textSecondary = Color(0xFF4F604E);
+  static const Color textMuted = Color(0xFF869785);
 
-  // Category Icon Colors (Harmonized Nordic Palette)
+  // Category Icon Colors (Botanical Earthy Palette)
   static Color getCategoryColor(String name) {
     final lower = name.toLowerCase();
-    if (lower.contains('makan') || lower.contains('food')) return const Color(0xFFD97746); // Warm Sand
-    if (lower.contains('kos') || lower.contains('kamar') || lower.contains('house')) return const Color(0xFF3C8A84); // Teal Aqua
-    if (lower.contains('transport') || lower.contains('bensin')) return const Color(0xFF6E8E67); // Forest Sage
-    if (lower.contains('listrik') || lower.contains('air') || lower.contains('util')) return const Color(0xFFC48E1D); // Warm Gold
-    if (lower.contains('belanja') || lower.contains('shop')) return const Color(0xFFCE6373); // Terracotta Pink
-    if (lower.contains('kuliah') || lower.contains('buku') || lower.contains('edu')) return const Color(0xFF2B716A); // Deep Pine
-    if (lower.contains('hiburan') || lower.contains('game')) return const Color(0xFF7A7996); // Slate Lavender
-    if (lower.contains('kesehatan') || lower.contains('obat')) return const Color(0xFF5A8E89); // Mineral Teal
-    if (lower.contains('gaji') || lower.contains('salary') || lower.contains('allowance')) return const Color(0xFF89A482); // Sage
-    return const Color(0xFF647B70);
+    if (lower.contains('makan') || lower.contains('food')) return const Color(0xFFD77C49); // Warm Sand Ochre
+    if (lower.contains('kos') || lower.contains('kamar') || lower.contains('house')) return const Color(0xFF5C7057); // Forest Olive
+    if (lower.contains('transport') || lower.contains('bensin')) return const Color(0xFF6B8770); // Sage Slate
+    if (lower.contains('listrik') || lower.contains('air') || lower.contains('util')) return const Color(0xFFD69F34); // Warm Gold
+    if (lower.contains('belanja') || lower.contains('shop')) return const Color(0xFFC76258); // Terracotta Coral
+    if (lower.contains('kuliah') || lower.contains('buku') || lower.contains('edu')) return const Color(0xFF3E604F); // Deep Spruce
+    if (lower.contains('hiburan') || lower.contains('game')) return const Color(0xFF76778D); // Muted Heather
+    if (lower.contains('kesehatan') || lower.contains('obat')) return const Color(0xFF548B80); // Mineral Sage
+    if (lower.contains('gaji') || lower.contains('salary') || lower.contains('allowance')) return const Color(0xFF4E8752); // Botanical Green
+    return const Color(0xFF6A7B69);
   }
 
   static IconData getCategoryIcon(String name) {
@@ -90,10 +82,10 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.aqua,
+        seedColor: AppColors.primary,
         primary: AppColors.primary,
-        secondary: AppColors.sage,
-        tertiary: AppColors.cream,
+        secondary: AppColors.primaryAccent,
+        tertiary: AppColors.warning,
         surface: AppColors.surface,
         onSurface: AppColors.textPrimary,
       ),

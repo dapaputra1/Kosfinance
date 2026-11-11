@@ -50,7 +50,7 @@ class _SpendingPieChartState extends State<SpendingPieChart> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.aqua.withValues(alpha: 0.22),
+                  color: AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.pie_chart_rounded, color: AppColors.primary, size: 20),

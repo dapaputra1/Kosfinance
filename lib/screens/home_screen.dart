@@ -7,10 +7,12 @@ import 'package:kos_finance_app/screens/add_transaction_screen.dart';
 import 'package:kos_finance_app/screens/bills_screen.dart';
 import 'package:kos_finance_app/screens/profile_screen.dart';
 import 'package:kos_finance_app/screens/transactions_screen.dart';
+import 'package:kos_finance_app/widgets/animated_popup.dart';
 import 'package:kos_finance_app/widgets/budget_card.dart';
 import 'package:kos_finance_app/widgets/dashboard_card.dart';
 import 'package:kos_finance_app/widgets/recent_transaction_item.dart';
 import 'package:kos_finance_app/widgets/spending_pie_chart.dart';
+import 'package:kos_finance_app/widgets/split_bill_dialog.dart';
 import 'package:kos_finance_app/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
@@ -55,17 +57,20 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_selectedIndex],
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
+      floatingActionButton: AnimatedTapScale(
+        onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const AddTransactionScreen()),
           );
         },
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: const Icon(Icons.add_rounded, size: 28),
+        child: FloatingActionButton(
+          onPressed: null,
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 3,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: const Icon(Icons.add_rounded, size: 28),
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: Container(
@@ -143,6 +148,7 @@ class DashboardScreen extends StatelessWidget {
 
     return SafeArea(
       child: RefreshIndicator(
+        color: AppColors.primary,
         onRefresh: () async {
           if (authProvider.user != null) {
             final budgetProvider = Provider.of<BudgetProvider>(context, listen: false);
@@ -157,237 +163,310 @@ class DashboardScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           children: [
             // User Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppColors.primary, AppColors.aqua],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+            FadeSlideEntrance(
+              delay: const Duration(milliseconds: 50),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 46,
+                        height: 46,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF384935), Color(0xFF5C7057)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Center(
-                        child: Text(
-                          (authProvider.user?.name.isNotEmpty ?? false)
-                              ? authProvider.user!.name[0].toUpperCase()
-                              : 'K',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                        child: Center(
+                          child: Text(
+                            (authProvider.user?.name.isNotEmpty ?? false)
+                                ? authProvider.user!.name[0].toUpperCase()
+                                : 'K',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${_getGreeting()},',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            authProvider.user?.name ?? 'Anak Kos',
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.incomeLight,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.income.withValues(alpha: 0.3)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.check_circle_rounded, color: AppColors.income, size: 14),
+                        SizedBox(width: 4),
+                        Text(
+                          'Keuangan Aktif',
+                          style: TextStyle(
+                            color: AppColors.income,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Hero Balance Card
+            FadeSlideEntrance(
+              delay: const Duration(milliseconds: 100),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF384935), Color(0xFF5C7057)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.28),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.account_balance_wallet_rounded,
+                                color: Colors.white.withValues(alpha: 0.85), size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Total Saldo Kas',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.85),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.16),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.white24, width: 1),
+                          ),
+                          child: const Text(
+                            'IDR',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      currencyFormat.format(balance),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.8,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    const SizedBox(height: 16),
+                    const Divider(color: Colors.white24, height: 1),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          '${_getGreeting()},',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        Row(
+                          children: [
+                            const Icon(Icons.arrow_upward_rounded, color: Color(0xFFB4E3B6), size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              currencyFormat.format(totalIncome),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          authProvider.user?.name ?? 'Anak Kos',
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                            letterSpacing: -0.3,
-                          ),
+                        Row(
+                          children: [
+                            const Icon(Icons.arrow_downward_rounded, color: Color(0xFFF7B1A5), size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              currencyFormat.format(totalExpense),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.incomeLight,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.income.withValues(alpha: 0.3)),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.check_circle_rounded, color: AppColors.income, size: 14),
-                      SizedBox(width: 4),
-                      Text(
-                        'Keuangan Aktif',
-                        style: TextStyle(
-                          color: AppColors.income,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 18),
-
-            // Hero Balance Card
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1B433F), Color(0xFF2B635D)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.25),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+            const SizedBox(height: 14),
+
+            // Quick Actions Bar (Varied interactive tools)
+            FadeSlideEntrance(
+              delay: const Duration(milliseconds: 140),
+              child: Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.account_balance_wallet_rounded,
-                              color: AppColors.aqua.withValues(alpha: 0.9), size: 18),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Total Saldo Kas',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.85),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: AppColors.aqua.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'IDR',
-                          style: TextStyle(
-                            color: AppColors.aqua,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    currencyFormat.format(balance),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -0.8,
+                  Expanded(
+                    child: _buildQuickActionButton(
+                      context: context,
+                      icon: Icons.add_rounded,
+                      label: 'Catat Baru',
+                      accentColor: AppColors.primary,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const AddTransactionScreen()),
+                        );
+                      },
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Divider(color: Colors.white24, height: 1),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.arrow_upward_rounded, color: AppColors.aqua, size: 16),
-                          const SizedBox(width: 4),
-                          Text(
-                            currencyFormat.format(totalIncome),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          const Icon(Icons.arrow_downward_rounded, color: Color(0xFFF89A89), size: 16),
-                          const SizedBox(width: 4),
-                          Text(
-                            currencyFormat.format(totalExpense),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildQuickActionButton(
+                      context: context,
+                      icon: Icons.calculate_rounded,
+                      label: 'Patungan',
+                      accentColor: const Color(0xFFC75846),
+                      onTap: () => showSplitBillDialog(context),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildQuickActionButton(
+                      context: context,
+                      icon: Icons.event_note_rounded,
+                      label: 'Tagihan Kos',
+                      accentColor: AppColors.warning,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const BillsScreen()),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
 
             // Metrics Row
-            Row(
-              children: [
-                Expanded(
-                  child: DashboardCard(
-                    title: 'Pemasukan Bulan Ini',
-                    amount: currencyFormat.format(monthlyIncome),
-                    icon: Icons.trending_up_rounded,
-                    color: AppColors.income,
+            FadeSlideEntrance(
+              delay: const Duration(milliseconds: 180),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: DashboardCard(
+                      title: 'Pemasukan Bulan Ini',
+                      amount: currencyFormat.format(monthlyIncome),
+                      icon: Icons.trending_up_rounded,
+                      color: AppColors.income,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: DashboardCard(
-                    title: 'Pengeluaran Bulan Ini',
-                    amount: currencyFormat.format(monthlyExpense),
-                    icon: Icons.trending_down_rounded,
-                    color: AppColors.expense,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DashboardCard(
+                      title: 'Pengeluaran Bulan Ini',
+                      amount: currencyFormat.format(monthlyExpense),
+                      icon: Icons.trending_down_rounded,
+                      color: AppColors.expense,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 12),
 
             // Monthly Net Card
-            DashboardCard(
-              title: 'Net Arus Kas Bulan Ini',
-              amount: currencyFormat.format(thisMonthNet),
-              icon: thisMonthNet >= 0 ? Icons.check_circle_outline_rounded : Icons.info_outline_rounded,
-              color: thisMonthNet >= 0 ? AppColors.income : AppColors.expense,
-              subtitle: thisMonthNet >= 0 ? 'Surplus Finansial' : 'Defisit Bulan Ini',
+            FadeSlideEntrance(
+              delay: const Duration(milliseconds: 220),
+              child: DashboardCard(
+                title: 'Net Arus Kas Bulan Ini',
+                amount: currencyFormat.format(thisMonthNet),
+                icon: thisMonthNet >= 0 ? Icons.check_circle_outline_rounded : Icons.info_outline_rounded,
+                color: thisMonthNet >= 0 ? AppColors.income : AppColors.expense,
+                subtitle: thisMonthNet >= 0 ? 'Surplus Finansial' : 'Defisit Bulan Ini',
+              ),
             ),
             const SizedBox(height: 16),
 
             // Budgeting Card
-            const BudgetCard(),
+            const FadeSlideEntrance(
+              delay: Duration(milliseconds: 260),
+              child: BudgetCard(),
+            ),
             const SizedBox(height: 16),
 
             // Spending Pie Chart
-            SpendingPieChart(
-              categoryExpenses: transactionProvider.dashboardData['categoryExpenses'] is List
-                  ? (transactionProvider.dashboardData['categoryExpenses'] as List)
-                  : [],
+            FadeSlideEntrance(
+              delay: const Duration(milliseconds: 300),
+              child: SpendingPieChart(
+                categoryExpenses: transactionProvider.dashboardData['categoryExpenses'] is List
+                    ? (transactionProvider.dashboardData['categoryExpenses'] as List)
+                    : [],
+              ),
             ),
             const SizedBox(height: 20),
 
@@ -428,7 +507,7 @@ class DashboardScreen extends StatelessWidget {
             // Recent Transactions List
             if (transactionProvider.recentTransactions.isEmpty)
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 24),
+                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(16),
@@ -459,12 +538,14 @@ class DashboardScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.border),
                 ),
-                padding: const EdgeInsets.all(8),
                 child: ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: transactionProvider.recentTransactions.length,
-                  separatorBuilder: (_, __) => const Divider(),
+                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                  itemCount: transactionProvider.recentTransactions.length > 5
+                      ? 5
+                      : transactionProvider.recentTransactions.length,
+                  separatorBuilder: (context, index) => const Divider(height: 1),
                   itemBuilder: (context, index) {
                     final transaction = transactionProvider.recentTransactions[index];
                     return RecentTransactionItem(
@@ -476,19 +557,53 @@ class DashboardScreen extends StatelessWidget {
                           ),
                         );
                       },
-                      onDelete: () async {
-                        if (transaction.id != null && authProvider.user != null) {
-                          await transactionProvider.deleteTransaction(
-                            transaction.id!,
-                            authProvider.user!.token,
-                          );
-                        }
-                      },
                     );
                   },
                 ),
               ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 80),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionButton({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required Color accentColor,
+    required VoidCallback onTap,
+  }) {
+    return AnimatedTapScale(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: accentColor.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: accentColor, size: 16),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
           ],
         ),
       ),

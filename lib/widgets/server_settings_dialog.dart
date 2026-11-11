@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:kos_finance_app/services/api_service.dart';
 import 'package:kos_finance_app/theme/app_theme.dart';
+import 'package:kos_finance_app/widgets/animated_popup.dart';
 
 void showServerSettingsDialog(BuildContext context) {
   final urlController = TextEditingController(text: ApiService.baseUrl);
 
-  showDialog(
+  showAnimatedPopup(
     context: context,
     builder: (context) => AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

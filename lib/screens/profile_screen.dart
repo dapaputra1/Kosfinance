@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:kos_finance_app/providers/auth_provider.dart';
 import 'package:kos_finance_app/screens/login_screen.dart';
 import 'package:kos_finance_app/theme/app_theme.dart';
+import 'package:kos_finance_app/widgets/animated_popup.dart';
 import 'package:kos_finance_app/widgets/custom_button.dart';
 import 'package:kos_finance_app/widgets/custom_text_field.dart';
 import 'package:kos_finance_app/widgets/server_settings_dialog.dart';
@@ -336,7 +337,7 @@ class ProfileScreen extends StatelessWidget {
                     height: 76,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [AppColors.primary, AppColors.aqua],
+                        colors: [Color(0xFF384935), AppColors.primary],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -474,7 +475,7 @@ class ProfileScreen extends StatelessWidget {
             // Logout Button
             OutlinedButton.icon(
               onPressed: () async {
-                final confirm = await showDialog<bool>(
+                final confirm = await showAnimatedPopup<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
                     shape: RoundedRectangleBorder(
