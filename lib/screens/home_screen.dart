@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:kos_finance_app/providers/auth_provider.dart';
 import 'package:kos_finance_app/providers/transaction_provider.dart';
+import 'package:kos_finance_app/providers/budget_provider.dart';
 import 'package:kos_finance_app/screens/add_transaction_screen.dart';
+import 'package:kos_finance_app/screens/bills_screen.dart';
 import 'package:kos_finance_app/screens/profile_screen.dart';
 import 'package:kos_finance_app/screens/transactions_screen.dart';
+import 'package:kos_finance_app/widgets/budget_card.dart';
 import 'package:kos_finance_app/widgets/dashboard_card.dart';
 import 'package:kos_finance_app/widgets/recent_transaction_item.dart';
 import 'package:kos_finance_app/widgets/spending_pie_chart.dart';
@@ -22,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = [
     const DashboardScreen(),
     const TransactionsScreen(),
+    const BillsScreen(),
     const ProfileScreen(),
   ];
 
@@ -34,12 +38,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadData() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
+    final budgetProvider = Provider.of<BudgetProvider>(context, listen: false);
     
     if (authProvider.user != null) {
       await Future.wait([
         transactionProvider.fetchTransactions(authProvider.user!.token),
         transactionProvider.fetchCategories(authProvider.user!.token),
         transactionProvider.fetchDashboardData(authProvider.user!.token),
+        budgetProvider.loadData(authProvider.user!.id),
       ]);
     }
   }
@@ -58,6 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {
@@ -67,15 +74,23 @@ class _HomeScreenState extends State<HomeScreen> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard_outlined),
+            activeIcon: Icon(Icons.dashboard),
             label: 'Dashboard',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.receipt_long_outlined),
-            label: 'Transactions',
+            activeIcon: Icon(Icons.receipt_long),
+            label: 'Transaksi',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event_note_outlined),
+            activeIcon: Icon(Icons.event_note),
+            label: 'Tagihan',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
-            label: 'Profile',
+            activeIcon: Icon(Icons.person),
+            label: 'Profil',
           ),
         ],
       ),
@@ -96,9 +111,11 @@ class DashboardScreen extends StatelessWidget {
       child: RefreshIndicator(
         onRefresh: () async {
           if (authProvider.user != null) {
+            final budgetProvider = Provider.of<BudgetProvider>(context, listen: false);
             await Future.wait([
               transactionProvider.fetchTransactions(authProvider.user!.token),
               transactionProvider.fetchDashboardData(authProvider.user!.token),
+              budgetProvider.loadData(authProvider.user!.id),
             ]);
           }
         },
@@ -210,7 +227,9 @@ class DashboardScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
+                  const BudgetCard(),
+                  const SizedBox(height: 16),
                   SpendingPieChart(
                     categoryExpenses: transactionProvider.dashboardData['categoryExpenses'] is List
                         ? (transactionProvider.dashboardData['categoryExpenses'] as List)

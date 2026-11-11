@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:kos_finance_app/providers/auth_provider.dart';
 import 'package:kos_finance_app/providers/transaction_provider.dart';
+import 'package:kos_finance_app/providers/budget_provider.dart';
 import 'package:kos_finance_app/screens/splash_screen.dart';
 
 void main() {
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
+        ChangeNotifierProvider(create: (_) => BudgetProvider()),
       ],
       child: MaterialApp(
         title: 'Kos Finance',
