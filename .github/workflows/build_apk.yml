@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -35,3 +38,15 @@ jobs:
         with:
           name: kosfinance-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: latest
+          name: KosFinance Android APK
+          body: |
+            Unduh file APK KosFinance untuk Android langsung dari link asset di bawah:
+            - **app-debug.apk** (Tinggal download dan instal langsung di HP Android tanpa perlu ekstrak zip)
+          files: build/app/outputs/flutter-apk/app-debug.apk
+

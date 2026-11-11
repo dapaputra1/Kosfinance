@@ -53,14 +53,14 @@ void showServerSettingsDialog(BuildContext context) {
             runSpacing: 8,
             children: [
               ActionChip(
-                avatar: const Icon(Icons.laptop_rounded, size: 16, color: AppColors.primary),
-                label: const Text('Localhost (Chrome/Mac)'),
+                avatar: const Icon(Icons.wifi_rounded, size: 16, color: AppColors.primary),
+                label: const Text('WiFi HP Fisik (192.168.110.102)'),
                 labelStyle: const TextStyle(fontSize: 12),
                 backgroundColor: AppColors.primaryLight,
                 side: BorderSide.none,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 onPressed: () {
-                  urlController.text = 'http://localhost:3000/api';
+                  urlController.text = 'http://192.168.110.102:3000/api';
                 },
               ),
               ActionChip(
@@ -72,6 +72,17 @@ void showServerSettingsDialog(BuildContext context) {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 onPressed: () {
                   urlController.text = 'http://10.0.2.2:3000/api';
+                },
+              ),
+              ActionChip(
+                avatar: const Icon(Icons.laptop_rounded, size: 16, color: AppColors.primary),
+                label: const Text('Localhost (Chrome/Mac)'),
+                labelStyle: const TextStyle(fontSize: 12),
+                backgroundColor: AppColors.primaryLight,
+                side: BorderSide.none,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                onPressed: () {
+                  urlController.text = 'http://localhost:3000/api';
                 },
               ),
             ],
