@@ -5,6 +5,7 @@ import 'package:kos_finance_app/providers/transaction_provider.dart';
 import 'package:kos_finance_app/providers/budget_provider.dart';
 import 'package:kos_finance_app/services/api_service.dart';
 import 'package:kos_finance_app/screens/splash_screen.dart';
+import 'package:kos_finance_app/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,11 +27,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Kos Finance',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.lightTheme,
         home: const SplashScreen(),
       ),
     );

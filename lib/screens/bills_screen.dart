@@ -6,6 +6,7 @@ import 'package:kos_finance_app/models/transaction_model.dart';
 import 'package:kos_finance_app/providers/auth_provider.dart';
 import 'package:kos_finance_app/providers/budget_provider.dart';
 import 'package:kos_finance_app/providers/transaction_provider.dart';
+import 'package:kos_finance_app/theme/app_theme.dart';
 import 'package:kos_finance_app/widgets/custom_button.dart';
 import 'package:kos_finance_app/widgets/custom_text_field.dart';
 
@@ -40,15 +41,16 @@ class _BillsScreenState extends State<BillsScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => Padding(
         padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 20,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          left: 24,
+          right: 24,
+          top: 16,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
         ),
         child: Form(
           key: formKey,
@@ -56,60 +58,91 @@ class _BillsScreenState extends State<BillsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                isEdit ? 'Edit Tagihan' : 'Tambah Tagihan Baru',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.receipt_long_rounded,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    isEdit ? 'Edit Tagihan' : 'Tambah Tagihan Baru',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
               CustomTextField(
                 controller: titleController,
                 hintText: 'Nama Tagihan (e.g. Kamar Kos, Token Listrik)',
-                prefixIcon: Icons.receipt_long,
+                prefixIcon: Icons.edit_note_rounded,
                 validator: (val) =>
-                    val == null || val.isEmpty ? 'Masukkan nama tagihan' : null,
+                    val == null || val.trim().isEmpty ? 'Masukkan nama tagihan' : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               CustomTextField(
                 controller: amountController,
                 hintText: 'Nominal Tagihan (Rp)',
-                prefixIcon: Icons.attach_money,
+                prefixIcon: Icons.payments_outlined,
                 keyboardType: TextInputType.number,
                 validator: (val) {
-                  if (val == null || val.isEmpty) return 'Masukkan nominal';
-                  if (double.tryParse(val.replaceAll(',', '')) == null) {
+                  if (val == null || val.trim().isEmpty) return 'Masukkan nominal';
+                  if (double.tryParse(val.replaceAll(',', '').trim()) == null) {
                     return 'Nominal tidak valid';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               CustomTextField(
                 controller: dueDayController,
-                hintText: 'Tanggal Jatuh Tempo Bulanan (1 - 31)',
-                prefixIcon: Icons.calendar_today,
+                hintText: 'Tanggal Jatuh Tempo Tiap Bulan (1 - 31)',
+                prefixIcon: Icons.calendar_today_rounded,
                 keyboardType: TextInputType.number,
                 validator: (val) {
-                  final day = int.tryParse(val ?? '');
+                  final day = int.tryParse(val?.trim() ?? '');
                   if (day == null || day < 1 || day > 31) {
                     return 'Masukkan tanggal 1 - 31';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               CustomTextField(
                 controller: noteController,
-                hintText: 'Catatan (Opsional)',
-                prefixIcon: Icons.note_outlined,
+                hintText: 'Catatan tambahan (Opsional)',
+                prefixIcon: Icons.sticky_note_2_outlined,
                 maxLines: 2,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               CustomButton(
-                text: isEdit ? 'Simpan Perubahan' : 'Tambah Tagihan',
+                text: isEdit ? 'Simpan Perubahan' : 'Tambah Pengingat Tagihan',
                 onPressed: () async {
                   if (formKey.currentState!.validate()) {
-                    final amount = double.parse(amountController.text.replaceAll(',', ''));
+                    final amount = double.parse(amountController.text.replaceAll(',', '').trim());
                     final dueDay = int.parse(dueDayController.text.trim());
                     final title = titleController.text.trim();
                     final note = noteController.text.trim();
@@ -153,29 +186,53 @@ class _BillsScreenState extends State<BillsScreen> {
     final budgetProvider = Provider.of<BudgetProvider>(context, listen: false);
     if (authProvider.user == null) return;
 
-    // Confirm dialog
+    final currency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Bayar Tagihan & Catat Transaksi?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.incomeLight,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.check_circle_rounded, color: AppColors.income, size: 22),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Bayar Tagihan?',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
         content: Text(
-          'Tindakan ini akan menandai tagihan "${bill.title}" sebagai lunas dan secara otomatis menambahkan pengeluaran sebesar Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(bill.amount)} ke catatan transaksi.',
+          'Tandai tagihan "${bill.title}" sebagai lunas dan otomatis catat pengeluaran sebesar ${currency.format(bill.amount)} ke buku transaksi?',
+          style: const TextStyle(color: AppColors.textSecondary, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Batal'),
+            child: const Text('Batal', style: TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Ya, Bayar'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.income,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Ya, Bayar & Catat'),
           ),
         ],
       ),
     );
 
     if (confirmed == true && mounted) {
-      // Find category: prioritize 'Housing' or 'Utilities' or first expense category
       final expenseCategories = transactionProvider.getCategoriesByType('expense');
       int categoryId = 1;
       if (expenseCategories.isNotEmpty) {
@@ -183,7 +240,8 @@ class _BillsScreenState extends State<BillsScreen> {
           (c) =>
               c.name.toLowerCase().contains('house') ||
               c.name.toLowerCase().contains('kos') ||
-              c.name.toLowerCase().contains('util'),
+              c.name.toLowerCase().contains('util') ||
+              c.name.toLowerCase().contains('listrik'),
           orElse: () => expenseCategories.first,
         );
         categoryId = match.id;
@@ -210,9 +268,17 @@ class _BillsScreenState extends State<BillsScreen> {
         }
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Tagihan berhasil dibayar & tercatat ke pengeluaran!'),
-              backgroundColor: Colors.green,
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: AppColors.income,
+              content: const Row(
+                children: [
+                  Icon(Icons.check_circle_outline, color: Colors.white),
+                  SizedBox(width: 10),
+                  Text('Tagihan berhasil dibayar & dicatat!'),
+                ],
+              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           );
         }
@@ -234,98 +300,141 @@ class _BillsScreenState extends State<BillsScreen> {
     }).toList();
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Tagihan & Pengingat Kos'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_rounded),
+            tooltip: 'Tambah Tagihan',
+            onPressed: () => _showAddEditBillDialog(),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        elevation: 2,
         onPressed: () => _showAddEditBillDialog(),
-        icon: const Icon(Icons.add),
-        label: const Text('Tambah Tagihan'),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text(
+          'Tambah Tagihan',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
       ),
       body: Column(
         children: [
-          // Summary Banner
-          Container(
-            padding: const EdgeInsets.all(16),
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.blue.shade700, Colors.indigo.shade600],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          // Hero Summary Card
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF3730A3), Color(0xFF4F46E5)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.25),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.blue.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Total Belum Dibayar',
-                        style: TextStyle(color: Colors.white70, fontSize: 13),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        currencyFormat.format(budgetProvider.pendingBillsTotal),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: budgetProvider.pendingBillsCount > 0
+                                    ? const Color(0xFFFBBF24)
+                                    : const Color(0xFF34D399),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Tagihan Belum Lunas',
+                              style: TextStyle(
+                                color: Color(0xFFE0E7FF),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${budgetProvider.pendingBillsCount} Tagihan',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                        const SizedBox(height: 6),
+                        Text(
+                          currencyFormat.format(budgetProvider.pendingBillsTotal),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white24, width: 1),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          '${budgetProvider.pendingBillsCount}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Text(
+                          'Tertunda',
+                          style: TextStyle(
+                            color: Color(0xFFE0E7FF),
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
-          // Filter Chips
+          // Segmented Filter Tabs
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              children: [
-                ChoiceChip(
-                  label: const Text('Semua'),
-                  selected: _filterIndex == 0,
-                  onSelected: (val) => setState(() => _filterIndex = 0),
-                ),
-                const SizedBox(width: 8),
-                ChoiceChip(
-                  label: Text('Belum Lunas (${budgetProvider.pendingBillsCount})'),
-                  selected: _filterIndex == 1,
-                  onSelected: (val) => setState(() => _filterIndex = 1),
-                ),
-                const SizedBox(width: 8),
-                ChoiceChip(
-                  label: const Text('Lunas'),
-                  selected: _filterIndex == 2,
-                  onSelected: (val) => setState(() => _filterIndex = 2),
-                ),
-              ],
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceMuted,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  _buildFilterTab(0, 'Semua (${bills.length})'),
+                  _buildFilterTab(1, 'Belum Lunas (${budgetProvider.pendingBillsCount})'),
+                  _buildFilterTab(2, 'Lunas (${bills.length - budgetProvider.pendingBillsCount})'),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -334,53 +443,98 @@ class _BillsScreenState extends State<BillsScreen> {
           Expanded(
             child: filteredBills.isEmpty
                 ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.event_available, size: 64, color: Colors.grey.shade400),
-                        const SizedBox(height: 12),
-                        Text(
-                          _filterIndex == 1
-                              ? 'Semua tagihan sudah lunas! Aman!'
-                              : 'Belum ada tagihan terdaftar.',
-                          style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
-                        ),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 68,
+                            height: 68,
+                            decoration: const BoxDecoration(
+                              color: AppColors.incomeLight,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.task_alt_rounded,
+                              size: 36,
+                              color: AppColors.income,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            _filterIndex == 1
+                                ? 'Semua tagihan sudah lunas!'
+                                : 'Belum ada tagihan tersimpan.',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            _filterIndex == 1
+                                ? 'Dompet dan pikiranmu aman untuk bulan ini.'
+                                : 'Catat uang kos, listrik, air, atau WiFi agar teratur.',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   )
                 : ListView.separated(
-                    padding: const EdgeInsets.only(left: 16, right: 16, bottom: 80, top: 8),
+                    padding: const EdgeInsets.only(left: 16, right: 16, bottom: 90, top: 8),
                     itemCount: filteredBills.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final bill = filteredBills[index];
                       final today = DateTime.now().day;
                       final daysLeft = bill.dueDay - today;
 
                       String dueText;
-                      Color dueColor;
+                      Color statusBg;
+                      Color statusFg;
+                      IconData statusIcon;
+
                       if (bill.isPaid) {
                         dueText = 'Sudah Lunas';
-                        dueColor = Colors.green;
+                        statusBg = AppColors.incomeLight;
+                        statusFg = AppColors.income;
+                        statusIcon = Icons.check_circle_rounded;
                       } else if (daysLeft < 0) {
-                        dueText = 'Lewat ${-daysLeft} hari lalu!';
-                        dueColor = Colors.red.shade700;
+                        dueText = 'Lewat ${-daysLeft} hari lalu';
+                        statusBg = AppColors.expenseLight;
+                        statusFg = AppColors.expense;
+                        statusIcon = Icons.warning_amber_rounded;
                       } else if (daysLeft == 0) {
                         dueText = 'Jatuh tempo HARI INI!';
-                        dueColor = Colors.orange.shade800;
+                        statusBg = AppColors.warningLight;
+                        statusFg = AppColors.warning;
+                        statusIcon = Icons.alarm_rounded;
                       } else {
-                        dueText = 'Jatuh tempo $daysLeft hari lagi (Tgl ${bill.dueDay})';
-                        dueColor = Colors.blue.shade700;
+                        dueText = '$daysLeft hari lagi (Tgl ${bill.dueDay})';
+                        statusBg = AppColors.primaryLight;
+                        statusFg = AppColors.primary;
+                        statusIcon = Icons.calendar_month_rounded;
                       }
 
-                      return Card(
-                        elevation: 1.5,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
+                      final catColor = AppColors.getCategoryColor(bill.title);
+                      final catIcon = AppColors.getCategoryIcon(bill.title);
+
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
                             color: bill.isPaid
-                                ? Colors.green.shade200
-                                : (daysLeft <= 0 ? Colors.red.shade200 : Colors.grey.shade200),
+                                ? AppColors.border
+                                : (daysLeft <= 0 ? AppColors.expense.withValues(alpha: 0.4) : AppColors.border),
+                            width: 1,
                           ),
                         ),
                         child: Padding(
@@ -391,20 +545,19 @@ class _BillsScreenState extends State<BillsScreen> {
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  CircleAvatar(
-                                    backgroundColor: bill.isPaid
-                                        ? Colors.green.shade50
-                                        : Colors.blue.shade50,
-                                    child: Icon(
-                                      bill.title.toLowerCase().contains('kamar') ||
-                                              bill.title.toLowerCase().contains('kos')
-                                          ? Icons.home_outlined
-                                          : (bill.title.toLowerCase().contains('listrik')
-                                              ? Icons.bolt_outlined
-                                              : Icons.receipt_outlined),
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
                                       color: bill.isPaid
-                                          ? Colors.green.shade700
-                                          : Colors.blue.shade700,
+                                          ? AppColors.surfaceMuted
+                                          : catColor.withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      catIcon,
+                                      color: bill.isPaid ? AppColors.textMuted : catColor,
+                                      size: 22,
                                     ),
                                   ),
                                   const SizedBox(width: 12),
@@ -415,20 +568,40 @@ class _BillsScreenState extends State<BillsScreen> {
                                         Text(
                                           bill.title,
                                           style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 15,
+                                            color: bill.isPaid
+                                                ? AppColors.textMuted
+                                                : AppColors.textPrimary,
                                             decoration: bill.isPaid
                                                 ? TextDecoration.lineThrough
                                                 : null,
                                           ),
                                         ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          dueText,
-                                          style: TextStyle(
-                                            color: dueColor,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 12,
+                                        const SizedBox(height: 6),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 3,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: statusBg,
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(statusIcon, size: 13, color: statusFg),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                dueText,
+                                                style: TextStyle(
+                                                  color: statusFg,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ],
@@ -437,44 +610,60 @@ class _BillsScreenState extends State<BillsScreen> {
                                   Text(
                                     currencyFormat.format(bill.amount),
                                     style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 15,
                                       color: bill.isPaid
-                                          ? Colors.grey
-                                          : Colors.red.shade700,
+                                          ? AppColors.textMuted
+                                          : AppColors.textPrimary,
                                     ),
                                   ),
                                 ],
                               ),
                               if (bill.note != null && bill.note!.isNotEmpty) ...[
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 10),
                                 Text(
                                   bill.note!,
-                                  style: TextStyle(
-                                    color: Colors.grey.shade600,
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
                                     fontSize: 12,
                                     fontStyle: FontStyle.italic,
                                   ),
                                 ),
                               ],
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 12),
                               const Divider(height: 1),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 8),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Row(
                                     children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit_outlined, size: 18),
-                                        onPressed: () =>
-                                            _showAddEditBillDialog(bill: bill),
-                                        tooltip: 'Edit Tagihan',
+                                      InkWell(
+                                        borderRadius: BorderRadius.circular(8),
+                                        onTap: () => _showAddEditBillDialog(bill: bill),
+                                        child: const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.edit_outlined,
+                                                  size: 15, color: AppColors.textSecondary),
+                                              SizedBox(width: 4),
+                                              Text(
+                                                'Edit',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: AppColors.textSecondary,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete_outline,
-                                            size: 18, color: Colors.red),
-                                        onPressed: () async {
+                                      const SizedBox(width: 8),
+                                      InkWell(
+                                        borderRadius: BorderRadius.circular(8),
+                                        onTap: () async {
                                           if (authProvider.user != null) {
                                             await budgetProvider.deleteBill(
                                               authProvider.user!.id,
@@ -482,23 +671,47 @@ class _BillsScreenState extends State<BillsScreen> {
                                             );
                                           }
                                         },
-                                        tooltip: 'Hapus Tagihan',
+                                        child: const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.delete_outline_rounded,
+                                                  size: 15, color: AppColors.expense),
+                                              SizedBox(width: 4),
+                                              Text(
+                                                'Hapus',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: AppColors.expense,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   ),
                                   if (!bill.isPaid)
-                                    ElevatedButton.icon(
+                                    FilledButton.icon(
                                       onPressed: () => _payAndRecordTransaction(bill),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.green.shade600,
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: AppColors.income,
                                         foregroundColor: Colors.white,
+                                        elevation: 0,
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 8),
+                                            horizontal: 14, vertical: 8),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
                                       ),
-                                      icon: const Icon(Icons.check, size: 16),
+                                      icon: const Icon(Icons.check_rounded, size: 16),
                                       label: const Text(
                                         'Bayar & Catat',
-                                        style: TextStyle(fontSize: 12),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     )
                                   else
@@ -511,8 +724,16 @@ class _BillsScreenState extends State<BillsScreen> {
                                           );
                                         }
                                       },
-                                      icon: const Icon(Icons.undo, size: 16),
-                                      label: const Text('Batal Lunas'),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: AppColors.textSecondary,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 6),
+                                      ),
+                                      icon: const Icon(Icons.undo_rounded, size: 15),
+                                      label: const Text(
+                                        'Batal Lunas',
+                                        style: TextStyle(fontSize: 12),
+                                      ),
                                     ),
                                 ],
                               ),
@@ -524,6 +745,42 @@ class _BillsScreenState extends State<BillsScreen> {
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFilterTab(int index, String title) {
+    final isSelected = _filterIndex == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _filterIndex = index),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.surface : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Text(
+            title,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected ? AppColors.primary : AppColors.textSecondary,
+            ),
+          ),
+        ),
       ),
     );
   }

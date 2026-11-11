@@ -5,6 +5,7 @@ import 'package:kos_finance_app/providers/transaction_provider.dart';
 import 'package:kos_finance_app/models/transaction_model.dart';
 import 'package:kos_finance_app/widgets/custom_button.dart';
 import 'package:kos_finance_app/widgets/custom_text_field.dart';
+import 'package:kos_finance_app/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
 class AddTransactionScreen extends StatefulWidget {
@@ -31,6 +32,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
     final t = widget.transaction;
     final initialIndex = (t != null && t.type == TransactionType.expense) ? 1 : 0;
     _tabController = TabController(length: 2, vsync: this, initialIndex: initialIndex);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
+
     if (t != null) {
       _titleController.text = t.title;
       _amountController.text =
@@ -65,7 +70,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
           decoration: const InputDecoration(
             labelText: 'Nama Kategori',
             hintText: 'e.g. Laundry, Buku, Fotokopi',
-            border: OutlineInputBorder(),
           ),
         ),
         actions: [
@@ -104,7 +108,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 30)),
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
@@ -117,7 +121,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
     if (_formKey.currentState!.validate()) {
       if (_selectedCategoryId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a category')),
+          const SnackBar(
+            content: Text('Pilih salah satu kategori terlebih dahulu'),
+            backgroundColor: AppColors.expense,
+          ),
         );
         return;
       }
@@ -170,102 +177,234 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
   @override
   Widget build(BuildContext context) {
     final transactionProvider = Provider.of<TransactionProvider>(context);
+    final isExpense = _tabController.index == 1;
+    final activeColor = isExpense ? AppColors.expense : AppColors.income;
+
+    final categories = transactionProvider
+        .getCategoriesByType(isExpense ? 'expense' : 'income');
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.transaction != null ? 'Edit Transaction' : 'Add Transaction'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Income'),
-            Tab(text: 'Expense'),
-          ],
-          onTap: (_) {
-            setState(() {
-              _selectedCategoryId = null;
-            });
-          },
-        ),
+        title: Text(widget.transaction != null ? 'Edit Transaksi' : 'Catat Transaksi'),
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           children: [
-            CustomTextField(
-              controller: _titleController,
-              hintText: 'Title',
-              prefixIcon: Icons.title,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a title';
-                }
-                return null;
-              },
+            // Segmented Type Selector
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.surfaceMuted,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              padding: const EdgeInsets.all(4),
+              child: TabBar(
+                controller: _tabController,
+                indicatorSize: TabBarIndicatorSize.tab,
+                dividerColor: Colors.transparent,
+                indicator: BoxDecoration(
+                  color: activeColor,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: activeColor.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                labelColor: Colors.white,
+                unselectedLabelColor: AppColors.textSecondary,
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                tabs: const [
+                  Tab(text: 'Pemasukan (+)'),
+                  Tab(text: 'Pengeluaran (-)'),
+                ],
+                onTap: (_) {
+                  setState(() {
+                    _selectedCategoryId = null;
+                  });
+                },
+              ),
             ),
-            const SizedBox(height: 16),
-            CustomTextField(
-              controller: _amountController,
-              hintText: 'Amount',
-              prefixIcon: Icons.attach_money,
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an amount';
-                }
-                if (double.tryParse(value.replaceAll(',', '')) == null) {
-                  return 'Please enter a valid amount';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            InkWell(
-              onTap: () => _selectDate(context),
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: 'Date',
-                  prefixIcon: const Icon(Icons.calendar_today),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+            const SizedBox(height: 20),
+
+            // Prominent Amount Input Card
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Nominal Transaksi',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                ),
-                child: Text(
-                  DateFormat('dd MMMM yyyy').format(_selectedDate),
-                ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _amountController,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: activeColor,
+                      letterSpacing: -0.5,
+                    ),
+                    decoration: InputDecoration(
+                      prefixText: 'Rp ',
+                      prefixStyle: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: activeColor,
+                      ),
+                      hintText: '0',
+                      hintStyle: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textMuted.withValues(alpha: 0.4),
+                      ),
+                      filled: false,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Masukkan nominal transaksi';
+                      }
+                      if (double.tryParse(value.replaceAll(',', '')) == null) {
+                        return 'Nominal tidak valid';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),
+
+            // Title Input
+            CustomTextField(
+              controller: _titleController,
+              hintText: 'e.g. Makan siang warteg, Uang saku ortu',
+              labelText: 'Judul Transaksi',
+              prefixIcon: Icons.edit_note_rounded,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Masukkan judul transaksi';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Date Selector Card
+            InkWell(
+              onTap: () => _selectDate(context),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.calendar_today_rounded, size: 20, color: AppColors.textSecondary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Tanggal',
+                            style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                          ),
+                          Text(
+                            DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(_selectedDate),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Category Section Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   'Kategori',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 TextButton.icon(
                   onPressed: () => _showAddCategoryDialog(context),
-                  icon: const Icon(Icons.add, size: 16),
-                  label: const Text('Kategori Baru'),
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    foregroundColor: AppColors.primary,
+                  ),
+                  icon: const Icon(Icons.add_rounded, size: 16),
+                  label: const Text('Kategori Baru', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
+
+            // Category Chips Grid
             if (transactionProvider.isLoading)
               const Center(child: CircularProgressIndicator())
             else
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: transactionProvider
-                    .getCategoriesByType(_tabController.index == 0 ? 'income' : 'expense')
-                    .map((category) {
+                children: categories.map((category) {
+                  final isSelected = _selectedCategoryId == category.id;
+                  final catColor = AppColors.getCategoryColor(category.name);
+                  final catIcon = AppColors.getCategoryIcon(category.name);
+
                   return ChoiceChip(
+                    avatar: Icon(
+                      catIcon,
+                      size: 16,
+                      color: isSelected ? Colors.white : catColor,
+                    ),
                     label: Text(category.name),
-                    selected: _selectedCategoryId == category.id,
+                    selected: isSelected,
+                    selectedColor: catColor,
+                    backgroundColor: AppColors.surface,
+                    labelStyle: TextStyle(
+                      color: isSelected ? Colors.white : AppColors.textPrimary,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      fontSize: 13,
+                    ),
+                    side: BorderSide(
+                      color: isSelected ? catColor : AppColors.border,
+                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     onSelected: (selected) {
                       setState(() {
                         _selectedCategoryId = selected ? category.id : null;
@@ -275,18 +414,26 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
                 }).toList(),
               ),
             const SizedBox(height: 16),
+
+            // Note input
             CustomTextField(
               controller: _noteController,
-              hintText: 'Note (Optional)',
-              prefixIcon: Icons.note,
-              maxLines: 3,
+              hintText: 'Tambahkan catatan jika perlu (opsional)',
+              labelText: 'Catatan',
+              prefixIcon: Icons.sticky_note_2_outlined,
+              maxLines: 2,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
+
+            // Save Button
             CustomButton(
-              text: widget.transaction != null ? 'Update Transaction' : 'Save Transaction',
+              text: widget.transaction != null ? 'Perbarui Transaksi' : 'Simpan Transaksi',
+              icon: Icons.check_circle_outline_rounded,
+              color: activeColor,
               isLoading: transactionProvider.isLoading,
               onPressed: _saveTransaction,
             ),
+            const SizedBox(height: 30),
           ],
         ),
       ),

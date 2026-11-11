@@ -4,6 +4,7 @@ import 'package:kos_finance_app/providers/auth_provider.dart';
 import 'package:kos_finance_app/screens/login_screen.dart';
 import 'package:kos_finance_app/screens/home_screen.dart';
 import 'package:kos_finance_app/widgets/app_logo.dart';
+import 'package:kos_finance_app/theme/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,7 +21,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkAuth() async {
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(milliseconds: 1400));
     if (!mounted) return;
     
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -39,29 +40,40 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
+      backgroundColor: AppColors.background,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AppLogo(size: 120),
+            AppLogo(size: 96),
             SizedBox(height: 24),
             Text(
               'Kos Finance',
               style: TextStyle(
-                fontSize: 28,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+                letterSpacing: -0.6,
               ),
             ),
-            SizedBox(height: 8),
+            SizedBox(height: 6),
             Text(
-              'Manage your boarding house finances',
+              'Kelola Finansial Anak Kos Lebih Pintar',
               style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
               ),
             ),
             SizedBox(height: 48),
-            CircularProgressIndicator(),
+            SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.2,
+                color: AppColors.primary,
+              ),
+            ),
           ],
         ),
       ),

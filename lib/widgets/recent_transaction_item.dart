@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kos_finance_app/models/transaction_model.dart';
+import 'package:kos_finance_app/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
 class RecentTransactionItem extends StatelessWidget {
@@ -17,62 +18,67 @@ class RecentTransactionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
-    final dateFormat = DateFormat('dd MMM yyyy');
+    final dateFormat = DateFormat('dd MMM');
+    final isIncome = transaction.type == TransactionType.income;
+    final catName = transaction.categoryName ?? (isIncome ? 'Pemasukan' : 'Pengeluaran');
+    final catColor = AppColors.getCategoryColor(catName);
+    final catIcon = AppColors.getCategoryIcon(catName);
 
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: CircleAvatar(
-        backgroundColor: transaction.type == TransactionType.income
-            ? Colors.green.shade100
-            : Colors.red.shade100,
-        child: Icon(
-          transaction.type == TransactionType.income
-              ? Icons.arrow_upward
-              : Icons.arrow_downward,
-          color: transaction.type == TransactionType.income
-              ? Colors.green
-              : Colors.red,
-        ),
-      ),
-      title: Text(
-        transaction.title,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      subtitle: Text(dateFormat.format(transaction.date)),
-      trailing: Text(
-        currencyFormat.format(transaction.amount),
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: transaction.type == TransactionType.income
-              ? Colors.green
-              : Colors.red,
-        ),
-      ),
+    return InkWell(
       onTap: onEdit,
-      onLongPress: () {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Delete Transaction'),
-            content: const Text('Are you sure you want to delete this transaction?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: catColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
               ),
-              TextButton(
-                onPressed: () {
-                  onDelete();
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Delete', style: TextStyle(color: Colors.red)),
+              child: Icon(catIcon, color: catColor, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    transaction.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: AppColors.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${dateFormat.format(transaction.date)} • $catName',
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
-      },
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '${isIncome ? '+' : '-'}${currencyFormat.format(transaction.amount)}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: isIncome ? AppColors.income : AppColors.expense,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:kos_finance_app/providers/transaction_provider.dart';
 import 'package:kos_finance_app/models/transaction_model.dart';
 import 'package:kos_finance_app/widgets/transaction_item.dart';
 import 'package:kos_finance_app/screens/add_transaction_screen.dart';
+import 'package:kos_finance_app/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
 class TransactionsScreen extends StatefulWidget {
@@ -112,11 +113,18 @@ class _TransactionsScreenState extends State<TransactionsScreen> with SingleTick
           children: [
             Row(
               children: [
-                Icon(Icons.share, color: Colors.blue.shade700),
-                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLight,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.share_rounded, color: AppColors.primary, size: 20),
+                ),
+                const SizedBox(width: 10),
                 const Text(
                   'Bagikan Laporan Keuangan',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -125,14 +133,14 @@ class _TransactionsScreenState extends State<TransactionsScreen> with SingleTick
               padding: const EdgeInsets.all(12),
               constraints: const BoxConstraints(maxHeight: 250),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300),
+                color: AppColors.surfaceMuted,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.border),
               ),
               child: SingleChildScrollView(
                 child: Text(
                   reportText,
-                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12, height: 1.4),
                 ),
               ),
             ),
@@ -143,16 +151,16 @@ class _TransactionsScreenState extends State<TransactionsScreen> with SingleTick
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text(
-                        'Laporan berhasil disalin! Siap dikirim ke WhatsApp/Orang Tua.'),
-                    backgroundColor: Colors.green,
+                    content: Text('Laporan berhasil disalin! Siap dikirim ke WhatsApp/Orang Tua.'),
+                    backgroundColor: AppColors.income,
                   ),
                 );
               },
-              icon: const Icon(Icons.copy),
+              icon: const Icon(Icons.copy_rounded, size: 18),
               label: const Text('Salin Laporan ke Clipboard'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                backgroundColor: AppColors.primary,
               ),
             ),
           ],
@@ -168,10 +176,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> with SingleTick
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transactions'),
+        title: const Text('Riwayat Transaksi'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share_outlined),
+            icon: const Icon(Icons.share_outlined, color: AppColors.textPrimary),
             tooltip: 'Bagikan Laporan',
             onPressed: () => _shareMonthlyReport(
               context,
@@ -180,40 +188,83 @@ class _TransactionsScreenState extends State<TransactionsScreen> with SingleTick
             ),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'All'),
-            Tab(text: 'Income'),
-            Tab(text: 'Expense'),
-          ],
-        ),
       ),
       body: Column(
         children: [
+          // Month Selector Card
           Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: DropdownButtonFormField<String>(
-              initialValue: _selectedMonth,
-              decoration: const InputDecoration(
-                labelText: 'Month',
-                border: OutlineInputBorder(),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.border),
               ),
-              items: _months.map((month) {
-                return DropdownMenuItem(
-                  value: month,
-                  child: Text(month),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedMonth = value;
-                  });
-                }
-              },
+              child: Row(
+                children: [
+                  const Icon(Icons.calendar_month_rounded, color: AppColors.primary, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedMonth,
+                        isExpanded: true,
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                        items: _months.map((month) {
+                          return DropdownMenuItem(
+                            value: month,
+                            child: Text(month),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _selectedMonth = value;
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
+
+          // Custom Tabs
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceMuted,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              indicator: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              labelColor: Colors.white,
+              unselectedLabelColor: AppColors.textSecondary,
+              labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+              tabs: const [
+                Tab(text: 'Semua'),
+                Tab(text: 'Pemasukan'),
+                Tab(text: 'Pengeluaran'),
+              ],
+            ),
+          ),
+
+          // Tab views
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -247,28 +298,40 @@ class _TransactionsScreenState extends State<TransactionsScreen> with SingleTick
     TransactionProvider transactionProvider,
   ) {
     if (transactionProvider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
 
     if (transactions.isEmpty) {
-      return const Center(
-        child: Text(
-          'No transactions found for this period',
-          style: TextStyle(color: Colors.grey),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.inbox_rounded, size: 52, color: AppColors.textMuted.withValues(alpha: 0.5)),
+            const SizedBox(height: 10),
+            const Text(
+              'Tidak ada transaksi di periode ini',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       );
     }
 
     return RefreshIndicator(
+      color: AppColors.primary,
       onRefresh: () async {
         if (authProvider.user != null) {
           await transactionProvider.fetchTransactions(authProvider.user!.token);
         }
       },
       child: ListView.separated(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 80),
         itemCount: transactions.length,
-        separatorBuilder: (_, __) => const Divider(),
+        separatorBuilder: (_, __) => const SizedBox(height: 10),
         itemBuilder: (context, index) {
           final transaction = transactions[index];
           return TransactionItem(

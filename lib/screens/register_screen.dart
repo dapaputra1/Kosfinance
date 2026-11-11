@@ -5,6 +5,7 @@ import 'package:kos_finance_app/screens/home_screen.dart';
 import 'package:kos_finance_app/widgets/custom_button.dart';
 import 'package:kos_finance_app/widgets/custom_text_field.dart';
 import 'package:kos_finance_app/widgets/server_settings_dialog.dart';
+import 'package:kos_finance_app/theme/app_theme.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -54,10 +55,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register'),
+        title: const Text('Buat Akun'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined),
+            icon: const Icon(Icons.settings_outlined, color: AppColors.textSecondary),
             tooltip: 'Pengaturan Server API',
             onPressed: () => showServerSettingsDialog(context),
           ),
@@ -66,7 +67,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
             child: Form(
               key: _formKey,
               child: Column(
@@ -74,43 +75,55 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    'Create Account',
+                    'Daftar Akun Baru',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.5,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   const Text(
-                    'Sign up to start managing your finances',
+                    'Mulai kelola uang saku dan tagihan kos secara teratur',
                     style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 28),
                   if (authProvider.error != null)
                     Container(
                       padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.only(bottom: 16),
+                      margin: const EdgeInsets.only(bottom: 20),
                       decoration: BoxDecoration(
-                        color: Colors.red.shade100,
-                        borderRadius: BorderRadius.circular(8),
+                        color: AppColors.expenseLight,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.expense.withValues(alpha: 0.3)),
                       ),
-                      child: Text(
-                        authProvider.error!,
-                        style: TextStyle(color: Colors.red.shade800),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded, color: AppColors.expense, size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              authProvider.error!,
+                              style: const TextStyle(color: AppColors.expense, fontSize: 13),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   CustomTextField(
                     controller: _nameController,
-                    hintText: 'Full Name',
-                    prefixIcon: Icons.person_outline,
+                    hintText: 'Nama lengkap Anda',
+                    labelText: 'Nama Lengkap',
+                    prefixIcon: Icons.person_outline_rounded,
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your name';
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Masukkan nama Anda';
                       }
                       return null;
                     },
@@ -118,15 +131,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 16),
                   CustomTextField(
                     controller: _emailController,
-                    hintText: 'Email',
-                    prefixIcon: Icons.email_outlined,
+                    hintText: 'nama@email.com',
+                    labelText: 'Email',
+                    prefixIcon: Icons.mail_outline_rounded,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
+                        return 'Masukkan alamat email Anda';
                       }
                       if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                        return 'Please enter a valid email';
+                        return 'Format email tidak valid';
                       }
                       return null;
                     },
@@ -134,12 +148,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 16),
                   CustomTextField(
                     controller: _passwordController,
-                    hintText: 'Password',
-                    prefixIcon: Icons.lock_outline,
+                    hintText: 'Minimal 6 karakter',
+                    labelText: 'Password',
+                    prefixIcon: Icons.lock_outline_rounded,
                     obscureText: _obscurePassword,
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        size: 20,
+                        color: AppColors.textMuted,
                       ),
                       onPressed: () {
                         setState(() {
@@ -149,10 +166,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a password';
+                        return 'Masukkan password';
                       }
                       if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+                        return 'Password minimal 6 karakter';
                       }
                       return null;
                     },
@@ -160,12 +177,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 16),
                   CustomTextField(
                     controller: _confirmPasswordController,
-                    hintText: 'Confirm Password',
-                    prefixIcon: Icons.lock_outline,
+                    hintText: 'Ulangi password',
+                    labelText: 'Konfirmasi Password',
+                    prefixIcon: Icons.lock_outline_rounded,
                     obscureText: _obscureConfirmPassword,
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                        _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        size: 20,
+                        color: AppColors.textMuted,
                       ),
                       onPressed: () {
                         setState(() {
@@ -175,30 +195,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please confirm your password';
+                        return 'Konfirmasi password Anda';
                       }
                       if (value != _passwordController.text) {
-                        return 'Passwords do not match';
+                        return 'Password konfirmasi tidak cocok';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 24),
                   CustomButton(
-                    text: 'Register',
+                    text: 'Daftar Sekarang',
+                    icon: Icons.person_add_rounded,
                     isLoading: authProvider.isLoading,
                     onPressed: _register,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Already have an account?'),
+                      const Text(
+                        'Sudah punya akun?',
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                      ),
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
-                        child: const Text('Login'),
+                        style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+                        child: const Text(
+                          'Masuk',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ],
                   ),

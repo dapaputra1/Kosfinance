@@ -7,6 +7,7 @@ import 'package:kos_finance_app/widgets/custom_button.dart';
 import 'package:kos_finance_app/widgets/custom_text_field.dart';
 import 'package:kos_finance_app/widgets/app_logo.dart';
 import 'package:kos_finance_app/widgets/server_settings_dialog.dart';
+import 'package:kos_finance_app/theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -54,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined),
+            icon: const Icon(Icons.settings_outlined, color: AppColors.textSecondary),
             tooltip: 'Pengaturan Server API',
             onPressed: () => showServerSettingsDialog(context),
           ),
@@ -63,29 +64,31 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
             child: Form(
               key: _formKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const AppLogo(size: 100),
-                  const SizedBox(height: 24),
+                  const Center(child: AppLogo(size: 72)),
+                  const SizedBox(height: 20),
                   const Text(
-                    'Welcome Back!',
+                    'Masuk ke Kos Finance',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.5,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   const Text(
-                    'Login to continue managing your finances',
+                    'Kelola uang saku, catatan harian, & tagihan kos',
                     style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -93,27 +96,37 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (authProvider.error != null)
                     Container(
                       padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.only(bottom: 16),
+                      margin: const EdgeInsets.only(bottom: 20),
                       decoration: BoxDecoration(
-                        color: Colors.red.shade100,
-                        borderRadius: BorderRadius.circular(8),
+                        color: AppColors.expenseLight,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.expense.withValues(alpha: 0.3)),
                       ),
-                      child: Text(
-                        authProvider.error!,
-                        style: TextStyle(color: Colors.red.shade800),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded, color: AppColors.expense, size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              authProvider.error!,
+                              style: const TextStyle(color: AppColors.expense, fontSize: 13),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   CustomTextField(
                     controller: _emailController,
-                    hintText: 'Email',
-                    prefixIcon: Icons.email_outlined,
+                    hintText: 'nama@email.com',
+                    labelText: 'Email',
+                    prefixIcon: Icons.mail_outline_rounded,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
+                        return 'Masukkan alamat email Anda';
                       }
                       if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                        return 'Please enter a valid email';
+                        return 'Format email tidak valid';
                       }
                       return null;
                     },
@@ -121,12 +134,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 16),
                   CustomTextField(
                     controller: _passwordController,
-                    hintText: 'Password',
-                    prefixIcon: Icons.lock_outline,
+                    hintText: '••••••••',
+                    labelText: 'Password',
+                    prefixIcon: Icons.lock_outline_rounded,
                     obscureText: _obscurePassword,
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        size: 20,
+                        color: AppColors.textMuted,
                       ),
                       onPressed: () {
                         setState(() {
@@ -136,29 +152,37 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
+                        return 'Masukkan password Anda';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 24),
                   CustomButton(
-                    text: 'Login',
+                    text: 'Masuk Sekarang',
+                    icon: Icons.login_rounded,
                     isLoading: authProvider.isLoading,
                     onPressed: _login,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Don't have an account?"),
+                      const Text(
+                        'Belum punya akun?',
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                      ),
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(builder: (_) => const RegisterScreen()),
                           );
                         },
-                        child: const Text('Register'),
+                        style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+                        child: const Text(
+                          'Daftar Akun',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ],
                   ),
