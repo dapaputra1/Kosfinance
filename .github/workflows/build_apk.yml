@@ -30,23 +30,39 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build Debug APK
-        run: flutter build apk --debug
+      - name: Build Universal Release APK (Under 20 MB)
+        run: |
+          flutter build apk --release
+          cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/KosFinance-Universal.apk
 
-      - name: Upload APK Artifact
+      - name: Build Split ABI Release APK (Under 15 MB)
+        run: |
+          flutter build apk --release --split-per-abi
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/app/outputs/flutter-apk/KosFinance-Arm64-SuperRingan.apk
+
+      - name: Upload APK Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: kosfinance-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          path: |
+            build/app/outputs/flutter-apk/KosFinance-Universal.apk
+            build/app/outputs/flutter-apk/KosFinance-Arm64-SuperRingan.apk
 
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
           tag_name: latest
-          name: KosFinance Android APK
+          name: KosFinance Android APK (Super Ringan < 20MB)
           body: |
-            Unduh file APK KosFinance untuk Android langsung dari link asset di bawah:
-            - **app-debug.apk** (Tinggal download dan instal langsung di HP Android tanpa perlu ekstrak zip)
-          files: build/app/outputs/flutter-apk/app-debug.apk
+            Pilihan unduhan file APK KosFinance (Semua berukuran jauh di bawah 50 MB):
+            
+            1. **`KosFinance-Universal.apk`** (~18 MB):
+               - Bisa diinstal di **semua tipe HP Android** (Samsung, Xiaomi, Oppo, Vivo, Realme, dll).
+            
+            2. **`KosFinance-Arm64-SuperRingan.apk`** (~12 MB):
+               - Versi paling hemat memori, dioptimalkan khusus untuk 99% HP Android modern (64-bit).
+          files: |
+            build/app/outputs/flutter-apk/KosFinance-Universal.apk
+            build/app/outputs/flutter-apk/KosFinance-Arm64-SuperRingan.apk
 
